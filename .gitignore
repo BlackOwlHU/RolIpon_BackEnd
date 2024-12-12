@@ -1,5 +1,5 @@
 # Ignore list for Eagle, a PCB layout tool
-
+*.env
 # Backup files
 *.s#?
 *.b#?
