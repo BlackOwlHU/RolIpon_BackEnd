@@ -15,7 +15,7 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended:true }));
 app.use(cors({
-    origin: 'htto?//127.0.0.1:5500',
+    origin: 'http://127.0.0.1:5500',
     credentials: true
 }));
 app.use(cookieParser())
@@ -84,18 +84,18 @@ function authenticateToken(req, res , next){
 
 // API végpontpok
 app.post('/api/register', (req, res) => {
-    const {email, name, psw} = req.body;
+    const {username, email, password} = req.body;
     const errors = [];
+
+    if(validator.isEmpty(username)){
+        errors.push({ error: 'Töltsd ki a neved!'});
+    }
 
     if(!validator.isEmail(email)){
         errors.push({ error: 'Nem valós email cím!'});
     }
 
-    if(validator.isEmpty(name)){
-        errors.push({ error: 'Töltsd ki a neved!'});
-    }
-
-    if(!validator.isLength(psw, {min: 6})){
+    if(!validator.isLength(password, {min: 6})){
         errors.push({ error: 'A jelszónak legalább 6 karakternek kell lennie!'});
     }
 
@@ -103,13 +103,13 @@ app.post('/api/register', (req, res) => {
         return res.status(400).json({ errors });
     }
 
-    bcrypt.hash(psw, 10, (err, hash) => {
+    bcrypt.hash(password, 10, (err, hash) => {
         if(err){
             return res.status(500).json({ error: 'Hiba a hashelés során'});
         }
-        const sql = 'INSERT INTO users (user_id, email, name, psw, profile_pic) VALUES(NULL, ?, ?, ?, "default.png")';
+        const sql = 'INSERT INTO users (user_id, username, email, password) VALUES(NULL, ?, ?, ?)';
 
-        pool.query(sql, [email, name, hash], (err, result) => {
+        pool.query(sql, [username, email, hash], (err, result) => {
             if(err){
                 return res.status(500).json({ error: 'Hiba a regisztráció során!' });
             }
@@ -120,14 +120,14 @@ app.post('/api/register', (req, res) => {
 
 // login
 app.post('/api/login', (req, res) => {
-    const { email, psw } = req.body;
+    const { email, password } = req.body;
     const errors = [];
 
     if(!validator.isEmail(email)){
         errors.push({ error: 'Add meg az email címet'});
     }
 
-    if(validator.isEmpty(psw)){
+    if(validator.isEmpty(password)){
         errors.push({ error: 'Add meg a jelszót'});
     }
 
@@ -146,7 +146,7 @@ app.post('/api/login', (req, res) => {
         }
 
         const user = result[0];
-        bcrypt.compare(psw, user.psw, (err, isMatch) => {
+        bcrypt.compare(password, user.password, (err, isMatch) => {
             if(isMatch){
                 const token = jwt.sign({ id: user.user_id },
                 JWT_SECRET, {expiresIn: '1y'});
