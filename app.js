@@ -8,10 +8,18 @@ const multer = require('multer');//images
 const fs = require('fs');
 const path = require('path');
 const validator = require('validator');
+const cors = require('cors');
+const cookieParser = require('cookie-parser');
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended:true }));
+app.use(cors({
+    origin: 'htto?//127.0.0.1:5500',
+    credentials: true
+}));
+app.use(cookieParser())
+
 dotenv.config();
 const PORT = process.env.PORT;
 const HOSTNAME = process.env.HOSTNAME;
@@ -61,7 +69,7 @@ const upload = multer({
 const JWT_SECRET = process.env.JWT_SECRET;
 
 function authenticateToken(req, res , next){
-    const token = req.headers['authorization'];
+    const token = req.cookies.auth_token;
     if(!token){
         return res.status(403).json({error: 'Nincs token'});
     }
@@ -142,7 +150,14 @@ app.post('/api/login', (req, res) => {
             if(isMatch){
                 const token = jwt.sign({ id: user.user_id },
                 JWT_SECRET, {expiresIn: '1y'});
-                return res.status(200).json({token});
+
+                res.cookie('auth_token', token, {
+                    httpOnly: true,
+                    secure: true,
+                    sameSite: 'none',
+                    maxAge: 1000 * 60 * 60 * 24 * 30 * 12
+                });
+                return res.status(200).json({message: 'Sikeres bejelentkezés'});
             } else{
                 res.status(401).json({ error: 'Rossz a jelszó'});
             }
