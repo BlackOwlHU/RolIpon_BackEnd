@@ -197,6 +197,43 @@ app.put('/api/editprofile',authenticateToken, upload.single('profile_pic'), (req
     });
 });
 
+// termékek
+app.get('/api/products',authenticateToken, (err, res) => {
+    const sql = 'SELECT * FROM products';
+    pool.query(sql, (err, result) => {
+        if(err){
+            return res.status(500).json({ error: 'Hiba az SQL-ben' });
+        }
+
+        if (result.length === 0){
+            return res.status(404).json({ error: 'Nincs még termék' });
+        }
+        
+        return res.status(200).json(result);
+    });
+});
+
+// új márka
+app.post('/api/newbrand', (req, res) => {
+    const brand = req.body.brand;
+    
+    //ellenőrzés
+    if(brand === "" || brand === null || !brand){
+        return res.status(400).json({error: 'Töltsd ki a mezőt!'})
+    }
+
+    pool.query('INSERT INTO brands (brand_id, brand) VALUES (NULL, ?)', [brand], (err, result) => {
+        if (err){
+            return res.status(500).json({error: 'Adatbázis hiba!'})
+        }
+        //ha nincs hiba
+        return res.status(201).json({
+            message: 'Sikeres feltöltés!',
+            id: result.insertId
+        })
+    })
+});
+
 // az összes meme lekérdezése
 app.get('/api/memes', authenticateToken, (err, res) => {
     const sql = 'SELECT uploads.upload_id, uploads.meme, uploads.user_id, users.name, users.profile_pic, COUNT(likes.upload_id) AS "like" FROM uploads JOIN users ON uploads.user_id = users.user_id JOIN likes ON uploads.upload_id = likes.upload_id GROUP BY(upload_id)';
