@@ -20,6 +20,9 @@ app.use(cors({
 }));
 app.use(cookieParser())
 
+// az uploads mappa fájlok elérése
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 dotenv.config();
 const PORT = process.env.PORT;
 const HOSTNAME = process.env.HOSTNAME;
@@ -170,7 +173,7 @@ app.get('/api/logintest',authenticateToken, (req, res) => {
     return res.status(200).json({ message: 'bent vagy' });
 });
 
-// profil tesztelése
+// profil tesztelése, javításra váró
 app.put('/api/editprofile',authenticateToken, upload.single('profile_pic'), (req, res) => {
     const {name, psw} = req.body;
     const user_id = req.user.id;
@@ -231,6 +234,25 @@ app.post('/api/newbrand', (req, res) => {
             message: 'Sikeres feltöltés!',
             id: result.insertId
         })
+    })
+});
+
+// új kategória
+app.post('/api/newcategory', (req, res) => {
+    const category = req.body.category;
+    const image = req.file ? req.file.filename : null;
+
+    if(category === "" || image === null) {
+        return res.status(400).json({ error: "Legyen a kategória neve és képe kitöltve"});
+    }
+
+    const sql = 'INSERT INTO category (category_id, category, image) VALUES(NULL, ?, ?)';
+    pool.query(sql, [category, image], (err, result) => {
+        if(err){
+            return res.status(500).json({ error: 'Hiba az SQL-ben' });
+        }
+
+        return res.status(201).json({ message: 'Kategória feltöltve',  category_id: result.insertId });
     })
 });
 
