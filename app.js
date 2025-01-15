@@ -116,7 +116,24 @@ app.post('/api/register', (req, res) => {
             if(err){
                 return res.status(500).json({ error: 'Hiba a regisztráció során!' });
             }
-            res.status(201).json({ message: 'Sikeres regisztráció!' });
+
+            // Az új user_id megszerzése
+            const user_id = result.insertId;
+
+            // Automatikus kosár létrehozása a user_id alapján
+            const cartSql = 'INSERT INTO cart (user_id) VALUES (?)';
+            pool.query(cartSql, [user_id], (err, cartResult) => {
+                if (err) {
+                    return res.status(500).json({ error: 'Hiba a kosár létrehozása során!' });
+                }
+
+                // Sikeres regisztráció és kosár hozzáadása
+                res.status(201).json({
+                    message: 'Sikeres regisztráció és kosár létrehozva!',
+                    userId: user_id,
+                    cartId: cartResult.insertId,
+                });
+            });
         });
     });
 });
@@ -168,6 +185,16 @@ app.post('/api/login', (req, res) => {
     });
 });
 
+// logout
+app.post('/api/logout', authenticateToken, (req, res) => {
+    res.clearCookie('auth_token', {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'none'
+    });
+    return res.status(200).json({ message: 'Sikeres kijelentkezés!'});
+});
+
 // tesztelés a jwt-re
 app.get('/api/logintest',authenticateToken, (req, res) => {
     return res.status(200).json({ message: 'bent vagy' });
@@ -201,7 +228,7 @@ app.put('/api/editprofile',authenticateToken, upload.single('profile_pic'), (req
 });
 
 // termékek
-app.get('/api/products',authenticateToken, (err, res) => {
+app.get('/api/products',authenticateToken, (req, res) => {
     const sql = 'SELECT * FROM products';
     pool.query(sql, (err, result) => {
         if(err){
@@ -216,8 +243,97 @@ app.get('/api/products',authenticateToken, (err, res) => {
     });
 });
 
+// márka lekérdezése
+app.get('/api/brands', authenticateToken, (req, res) => {
+    const sql = 'SELECT* FROM brands';
+    pool.query(sql, (err, result) => {
+        if(err){
+            return res.status(500).json({ error: 'Hiba az SQL-ben' });
+        }
+
+        if (result.length === 0){
+            return res.status(404).json({ error: 'Nincs még márka' });
+        }
+        
+        return res.status(200).json(result);
+    });
+});
+
+// kategória lekérdezése
+app.get('/api/category', authenticateToken, (req, res) => {
+    const sql = 'SELECT * FROM category';
+    pool.query(sql, (err, result) => {
+        if(err){
+            return res.status(500).json({ error: 'Hiba az SQL-ben' });
+        }
+
+        if (result.length === 0){
+            return res.status(404).json({ error: 'Nincs még kategória' });
+        }
+        
+        return res.status(200).json(result);
+    });
+});
+
+// termék kosárhoz adása
+app.post('/api/addCart', authenticateToken, (req, res) => {
+    const {cart_id, product_id, quantity} = req.body;
+});
+
+// termék kivétele kosárból
+
+// Új termék hozzáadása
+app.post('/api/newproducts', authenticateToken, upload.single('image'), (req, res) => {
+    const { product_name, category_id, brand_id, price, is_in_stock, description } = req.body;
+    const image = req.file ? req.file.filename : null;
+
+    // Ellenőrzés: Kötelező mezők
+    if (!product_name || !category_id || !brand_id || !price) {
+        return res.status(400).json({ error: 'Hiányzó kötelező mezők!' });
+    }
+
+    // Ellenőrizzük, hogy létezik-e a megadott category_id és brand_id
+    const checkSql = `
+        SELECT 
+            (SELECT COUNT(*) FROM category WHERE category_id = ?) AS category_exists,
+            (SELECT COUNT(*) FROM brands WHERE brand_id = ?) AS brand_exists;
+    `;
+    pool.query(checkSql, [category_id, brand_id], (err, results) => {
+        if (err) {
+            return res.status(500).json({ error: 'Hiba az ellenőrzés során!' });
+        }
+
+        const categoryExists = results[0].category_exists > 0;
+        const brandExists = results[0].brand_exists > 0;
+
+        if (!categoryExists || !brandExists) {
+            return res.status(400).json({ error: 'Érvénytelen category_id vagy brand_id!' });
+        }
+
+        // Beszúrás a termékek táblába
+        const insertSql = `
+            INSERT INTO products (product_id, product_name, category_id, brand_id, price, is_in_stock, description, image)
+            VALUES (NULL, ?, ?, ?, ?, ?, ?, ?)
+        `;
+        const values = [product_name, category_id, brand_id, price, is_in_stock, description, image];
+
+        pool.query(insertSql, [product_name, category_id, brand_id, price, is_in_stock, description, image], (err, result) => {
+            if (err) {
+                return res.status(500).json({ error: 'Hiba a termék beszúrása során!' });
+            }
+
+            // Visszaadjuk az új termék ID-ját
+            res.status(201).json({
+                message: 'Új termék sikeresen hozzáadva!',
+                product_id: result.insertId,
+            });
+        });
+    });
+});
+
+
 // új márka
-app.post('/api/newbrand', (req, res) => {
+app.post('/api/newbrand', authenticateToken ,(req, res) => {
     const brand = req.body.brand;
     
     //ellenőrzés
@@ -238,7 +354,7 @@ app.post('/api/newbrand', (req, res) => {
 });
 
 // új kategória
-app.post('/api/newcategory', (req, res) => {
+app.post('/api/newcategory', authenticateToken, upload.single('image'), (req, res) => {
     const category = req.body.category;
     const image = req.file ? req.file.filename : null;
 
@@ -253,82 +369,6 @@ app.post('/api/newcategory', (req, res) => {
         }
 
         return res.status(201).json({ message: 'Kategória feltöltve',  category_id: result.insertId });
-    })
-});
-
-// az összes meme lekérdezése
-app.get('/api/memes', authenticateToken, (err, res) => {
-    const sql = 'SELECT uploads.upload_id, uploads.meme, uploads.user_id, users.name, users.profile_pic, COUNT(likes.upload_id) AS "like" FROM uploads JOIN users ON uploads.user_id = users.user_id JOIN likes ON uploads.upload_id = likes.upload_id GROUP BY(upload_id)';
-
-    pool.query(sql, (err, result) => {
-        if(err){
-            return res.status(500).json({ error: 'Hiba az SQL-ben' });
-        }
-
-        if (result.length === 0){
-            return res.status(404).json({ error: 'Nincs még meme' });
-        }
-
-        return res.status(200).json(result);
-    });
-});
-
-// új meme feltöltése
-app.post('/api/upload', authenticateToken, upload.single('meme'), (req, res) => {
-    const user_id = req.user.id;
-    const meme = req.file ? req.file.filename : null;
-    
-    if(meme === null){
-        return res.status(400).json({ error: 'Válassz ki egy képet' });
-    }
-
-    const sql = 'INSERT INTO uploads (upload_id, user_id, meme) VALUES (NULL, ?, ?)';
-    pool.query(sql, [user_id, meme], (err, result) => {
-        if(err){
-            return res.status(500).json({ error: 'Hiba az SQL-ben' });
-        }
-
-        return res.status(201).json({ message: 'Kép feltöltve',  upload_id: result.insertId });
-    });
-});
-
-// like
-app.post('/api/like/:upload_id', authenticateToken, (req, res) => {
-    const user_id = req.user.id;
-    const upload_id = req.params.upload_id;
-
-    const sqlSelect = 'SELECT * FROM likes WHERE upload_id = ? AND user_id = ?';
-    pool.query(sqlSelect, [upload_id, user_id], (err, result) => {
-        if(err){
-            return res.status(500).json({ error: 'Hiba az SQL-ben' });
-        }
-
-        if(result.length !== 0){
-            return res.status(409).json({ error: 'Már lájkoltad' });
-        }
-
-        const sqlInsert = 'INSERT INTO likes (upload_id, user_id) VALUES (?, ?)';
-        pool.query(sqlInsert, [upload_id, user_id], (err, result) => {
-            if(err){
-                return res.status(500).json({ error: 'Hiba az SQL-ben' });
-            }
-
-            return res.status(200).json({ message: 'Tetszik' });
-        })
-    })
-});
-
-// unlike
-app.delete('/api/unlike/:upload_id', authenticateToken, (req, res) => {
-    const user_id = req.user.id;
-    const upload_id = req.params.upload_id;
-
-    const sqlDelete = 'DELETE FROM likes WHERE upload_id = ? AND user_id = ?';
-    pool.query(sqlDelete, [upload_id, user_id], (err, result) => {
-        if (err) {
-            return res.status(500).json({ error: 'Hiba az SQL-ben' });
-        }
-        return res.status(204).send();
     })
 });
 
