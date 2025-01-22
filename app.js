@@ -275,12 +275,132 @@ app.get('/api/category', authenticateToken, (req, res) => {
     });
 });
 
+// rendelés táblába rerdelés létrehozása, rendelési adatok táblába adatok beszúrása és kosár ürítése
+app.post('/api/order', authenticateToken, (req, res) => {
+    const user_id = req.user.id;
+    const cart_id = req.body.cart_id;
+    const cart_items_id = req.body.cart_items_id;
+
+    const sqlSelectCart_Items = 'SELECT * FROM cart_items WHERE cart_id = ?';
+});
+
 // termék kosárhoz adása
-app.post('/api/addCart', authenticateToken, (req, res) => {
-    const {cart_id, product_id, quantity} = req.body;
+app.post('/api/cart/add', authenticateToken, (req, res) => {
+    const user_id = req.user.id; // Assuming the user ID is stored in the token
+    const { product_id, quantity } = req.body;
+
+    if (!product_id || !quantity) {
+        return res.status(400).json({ error: 'Product ID and quantity are required!' });
+    }
+
+    // Check if the product exists
+    pool.query('SELECT * FROM products WHERE product_id = ?', [product_id], (err, results) => {
+        if (err) {
+            return res.status(500).json({ error: 'Database error!' });
+        }
+
+        if (results.length === 0) {
+            return res.status(404).json({ error: 'Product not found!' });
+        }
+
+        // Get the user's cart ID
+        pool.query('SELECT cart_id FROM cart WHERE user_id = ?', [user_id], (err, results) => {
+            if (err) {
+                return res.status(500).json({ error: 'Database error!' });
+            }
+
+            let cart_id;
+            if (results.length === 0) {
+                // Create a new cart if the user doesn't have one
+                pool.query('INSERT INTO carts (user_id) VALUES (?)', [user_id], (err, result) => {
+                    if (err) {
+                        return res.status(500).json({ error: 'Database error!' });
+                    }
+                    return res.status(201).json({ message: 'Cart created!' });
+                });
+            } else {
+                cart_id = results[0].cart_id;
+                const sqlInsert = 'INSERT INTO cart_items (cart_id, product_id, quantity) VALUES (?, ?, ?)';
+                pool.query(sqlInsert, [cart_id, product_id, quantity], (err, result) => {
+                    if (err) {
+                        return res.status(500).json({ error: 'Database error!' });
+                    }
+                    return res.status(201).json({ message: 'Product added to cart!' });
+                });
+            }
+        });
+    });
+});
+
+// termék lekérése
+app.get('/api/cart', authenticateToken, (req, res) => {
+    const user_id = req.user.id;
+
+    // Get the user's cart ID
+    pool.query('SELECT cart_id FROM cart WHERE user_id = ?', [user_id], (err, results) => {
+        if (err) {
+            return res.status(500).json({ error: 'Database error!' });
+        }
+
+        if (results.length === 0) {
+            return res.status(404).json({ error: 'Cart not found!' });
+        }
+
+        const cart_id = results[0].cart_id;
+        const sql = `
+            SELECT 
+                cart_items.cart_items_id,
+                cart_items.product_id,
+                products.product_name,
+                (products.price*cart_items.quantity) AS total_price,
+                products.price,
+                cart_items.quantity
+            FROM cart_items
+            JOIN products ON cart_items.product_id = products.product_id
+            WHERE cart_items.cart_id = ?
+        `;
+
+        pool.query(sql, [cart_id], (err, results) => {
+            if (err) {
+                return res.status(500).json({ error: 'Database error!' });
+            }
+            if (results.length === 0) {
+                return res.status(404).json({ error: 'No items in cart!' });
+            }
+
+            return res.status(200).json(results);
+        });
+    });
 });
 
 // termék kivétele kosárból
+app.delete('/api/cart/remove', authenticateToken, (req, res) => {
+    const user_id = req.user.id;
+    const { cart_items_id } = req.body;
+
+    if (!cart_items_id) {
+        return res.status(400).json({ error: 'Cart item ID is required!' });
+    }
+
+    const sql = `
+        DELETE cart_items
+        FROM cart_items
+        JOIN cart ON cart_items.cart_id = cart.cart_id
+        WHERE cart.user_id = ? AND cart_items.cart_items_id = ?
+    `;
+
+    pool.query(sql, [user_id, cart_items_id], (err, result) => {
+        if (err) {
+            return res.status(500).json({ error: 'Database error!' });
+        }
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Cart item not found!' });
+        }
+
+        return res.status(200).json({ message: 'Cart item removed!' });
+    });
+});
 
 // Új termék hozzáadása
 app.post('/api/newproducts', authenticateToken, upload.single('image'), (req, res) => {
@@ -331,6 +451,27 @@ app.post('/api/newproducts', authenticateToken, upload.single('image'), (req, re
     });
 });
 
+// termék törlése
+app.delete('/api/products/delete', authenticateToken, (req, res) => {
+    const product_id = req.body.product_id;
+
+    if (!product_id) {
+        return res.status(400).json({ error: 'Add meg a termék ID-t!' });
+    }
+
+    const sql = 'DELETE FROM products WHERE product_id = ?';
+    pool.query(sql, [product_id], (err, result) => {
+        if (err) {
+            return res.status(500).json({ error: 'Hiba az SQL-ben' });
+        }
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Nincs ilyen termék' });
+        }
+
+        return res.status(200).json({ message: 'Termék törölve' });
+    });
+});
 
 // új márka
 app.post('/api/newbrand', authenticateToken ,(req, res) => {
@@ -353,6 +494,28 @@ app.post('/api/newbrand', authenticateToken ,(req, res) => {
     })
 });
 
+// márka törlése
+app.delete('/api/brand/delete', authenticateToken, (req, res) => {
+    const brand_id = req.body.brand_id;
+
+    if(!brand_id){
+        return res.status(400).json({ error: 'Add meg a márka ID-t!'});
+    }
+
+    const sql = 'DELETE FROM brands WHERE brand_id = ?';
+    pool.query(sql, [brand_id], (err, result) => {
+        if(err){
+            return res.status(500).json({ error: 'Hiba az SQL-ben' });
+        }
+
+        if(result.affectedRows === 0){
+            return res.status(404).json({ error: 'Nincs ilyen márka' });
+        }
+
+        return res.status(200).json({ message: 'Márka törölve' });
+    });
+});
+
 // új kategória
 app.post('/api/newcategory', authenticateToken, upload.single('image'), (req, res) => {
     const category = req.body.category;
@@ -370,6 +533,28 @@ app.post('/api/newcategory', authenticateToken, upload.single('image'), (req, re
 
         return res.status(201).json({ message: 'Kategória feltöltve',  category_id: result.insertId });
     })
+});
+
+// kategória törlése
+app.delete('/api/category/delete', authenticateToken, (req, res) => {
+    const category_id = req.body.category_id;
+
+    if(!category_id){
+        return res.status(400).json({ error: 'Add meg a kategória ID-t!'});
+    }
+
+    const sql = 'DELETE FROM category WHERE category_id = ?';
+    pool.query(sql, [category_id], (err, result) => {
+        if(err){
+            return res.status(500).json({ error: 'Hiba az SQL-ben' });
+        }
+
+        if(result.affectedRows === 0){
+            return res.status(404).json({ error: 'Nincs ilyen kategória' });
+        }
+
+        return res.status(200).json({ message: 'Kategória törölve' });
+    });
 });
 
 app.listen(PORT, HOSTNAME, ()=>{
