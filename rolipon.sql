@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Gép: 127.0.0.1
--- Létrehozás ideje: 2025. Jan 15. 09:20
+-- Létrehozás ideje: 2025. Jan 23. 11:36
 -- Kiszolgáló verziója: 10.4.32-MariaDB
 -- PHP verzió: 8.2.12
 
@@ -139,6 +139,13 @@ CREATE TABLE `products` (
   `image` varchar(100) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- A tábla adatainak kiíratása `products`
+--
+
+INSERT INTO `products` (`product_id`, `product_name`, `category_id`, `brand_id`, `price`, `is_in_stock`, `description`, `image`) VALUES
+(1, 'Ryzen 5 5500', 2, 2, 35000.00, 1, 'Ryzen 5 5500 6mag 12szál AMD Processzor', '1-2025-01-15-ryzen55500.webp');
+
 -- --------------------------------------------------------
 
 --
@@ -248,7 +255,7 @@ ALTER TABLE `cart`
 -- AUTO_INCREMENT a táblához `cart_items`
 --
 ALTER TABLE `cart_items`
-  MODIFY `cart_items_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `cart_items_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT a táblához `category`
@@ -272,7 +279,7 @@ ALTER TABLE `order_items`
 -- AUTO_INCREMENT a táblához `products`
 --
 ALTER TABLE `products`
-  MODIFY `product_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `product_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT a táblához `users`
