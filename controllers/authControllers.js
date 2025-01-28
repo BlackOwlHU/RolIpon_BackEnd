@@ -30,7 +30,7 @@ const register = (req, res) => {
         }
         const sql = 'INSERT INTO users (user_id, username, email, password) VALUES(NULL, ?, ?, ?)';
 
-        pool.query(sql, [username, email, hash], (err, result) => {
+        db.query(sql, [username, email, hash], (err, result) => {
             if (err) {
                 return res.status(500).json({ error: 'Hiba a regisztráció során!' });
             }
@@ -40,7 +40,7 @@ const register = (req, res) => {
 
             // Automatikus kosár létrehozása a user_id alapján
             const cartSql = 'INSERT INTO cart (user_id) VALUES (?)';
-            pool.query(cartSql, [user_id], (err, cartResult) => {
+            db.query(cartSql, [user_id], (err, cartResult) => {
                 if (err) {
                     return res.status(500).json({ error: 'Hiba a kosár létrehozása során!' });
                 }
@@ -73,7 +73,7 @@ const login = (req, res) => {
     }
 
     const sql = 'SELECT * FROM users WHERE email LIKE ?';
-    pool.query(sql, [email], (err, result) => {
+    db.query(sql, [email], (err, result) => {
         if (err) {
             return res.status(500).json({ error: 'Hiba az SQL-ben' })
         }
