@@ -1,4 +1,4 @@
-//everytime you make something stupid add to this: 0
+// sql crashel száma: 8
 const express = require('express');//i can't remember
 const mysql = require('mysql2');//sql database
 const bcrypt = require('bcrypt');//crypting passwords
@@ -10,9 +10,15 @@ const path = require('path');
 const validator = require('validator');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
-const { log } = require('console');
+
+// általunk készített packagek importálása
+const authenticateToken = require('./middleware/jwtAuth');
+const authRoutes = require('./routes/authRoutes');
+const profileRoutes = require('./routes/profileRoutes');
 
 const app = express();
+
+// middleware konfigurációk
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors({
@@ -24,206 +30,87 @@ app.use(cookieParser())
 // az uploads mappa fájlok elérése
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-dotenv.config();
-const PORT = process.env.PORT;
-const HOSTNAME = process.env.HOSTNAME;
+// az általunk készített packagek használata
+app.use('/api/auth', authRoutes);
+app.use('/api/profile', profileRoutes);
 
-const pool = mysql.createPool({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_DATABASE,
-    timezone: 'Z',
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0
-});
-
-const uploadDir = 'uploads/';
-
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        if (!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir);
-        }
-        cb(null, uploadDir);
-    },
-    filename: function (req, file, cb) {
-        const now = new Date().toISOString().split('T')[0];
-        cb(null, `${req.user.id}-${now}-${file.originalname}`)
-    }
-});
-
-const upload = multer({
-    storage: storage,
-    limits: { fileSize: 10 * 1024 * 1024 },
-    fileFilter: function (req, file, cb) {
-        const filetypes = /jpeg|jpg|png|gif|webp|avif/;
-        const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-        const mimetype = filetypes.test(file.mimetype);
-        if (extname && mimetype) {
-            return cb(null, true);
-        }
-        else {
-            cb(new Error('Csak képformátumok megengedettek!'));
-        }
-    }
-});
-
-const JWT_SECRET = process.env.JWT_SECRET;
-
-function authenticateToken(req, res, next) {
-    const token = req.cookies.auth_token;
-    if (!token) {
-        return res.status(403).json({ error: 'Nincs token' });
-    }
-    jwt.verify(token, JWT_SECRET, (err, user) => {
+// Rendelés felhasználóval, lakcím és postázási információkkal, rendelés árával lekérdezése
+app.get('/api/ordersGet', authenticateToken, (req, res) => {
+    const user_id = req.user.id;
+    const sql = 'SELECT users.firstname, users.surname, users.city, users.postcode, users.address, users.tel, orders.order_id, orders.order_date, orders.total_amount FROM users JOIN orders ON users.user_id = orders.user_id WHERE users.user_id = ?';
+    pool.query(sql, [user_id], (err, result) => {
         if (err) {
-            return res.status(403).json({ error: 'Van token, csak épp nem érvényes' });
-        }
-        req.user = user;
-        next();
-    })
-};
-
-// API végpontpok
-app.post('/api/register', (req, res) => {
-    const { username, email, password } = req.body;
-    const errors = [];
-
-    if (validator.isEmpty(username)) {
-        errors.push({ error: 'Töltsd ki a neved!' });
-    }
-
-    if (!validator.isEmail(email)) {
-        errors.push({ error: 'Nem valós email cím!' });
-    }
-
-    if (!validator.isLength(password, { min: 6 })) {
-        errors.push({ error: 'A jelszónak legalább 6 karakternek kell lennie!' });
-    }
-
-    if (errors.length > 0) {
-        return res.status(400).json({ errors });
-    }
-
-    bcrypt.hash(password, 10, (err, hash) => {
-        if (err) {
-            return res.status(500).json({ error: 'Hiba a hashelés során' });
-        }
-        const sql = 'INSERT INTO users (user_id, username, email, password) VALUES(NULL, ?, ?, ?)';
-
-        pool.query(sql, [username, email, hash], (err, result) => {
-            if (err) {
-                return res.status(500).json({ error: 'Hiba a regisztráció során!' });
-            }
-
-            // Az új user_id megszerzése
-            const user_id = result.insertId;
-
-            // Automatikus kosár létrehozása a user_id alapján
-            const cartSql = 'INSERT INTO cart (user_id) VALUES (?)';
-            pool.query(cartSql, [user_id], (err, cartResult) => {
-                if (err) {
-                    return res.status(500).json({ error: 'Hiba a kosár létrehozása során!' });
-                }
-
-                // Sikeres regisztráció és kosár hozzáadása
-                res.status(201).json({
-                    message: 'Sikeres regisztráció és kosár létrehozva!',
-                    userId: user_id,
-                    cartId: cartResult.insertId,
-                });
-            });
-        });
-    });
-});
-
-// login
-app.post('/api/login', (req, res) => {
-    const { email, password } = req.body;
-    const errors = [];
-
-    if (!validator.isEmail(email)) {
-        errors.push({ error: 'Add meg az email címet' });
-    }
-
-    if (validator.isEmpty(password)) {
-        errors.push({ error: 'Add meg a jelszót' });
-    }
-
-    if (errors.length > 0) {
-        return res.status(400).json({ errors });
-    }
-
-    const sql = 'SELECT * FROM users WHERE email LIKE ?';
-    pool.query(sql, [email], (err, result) => {
-        if (err) {
-            return res.status(500).json({ error: 'Hiba az SQL-ben' })
+            return res.status(500).json({ error: 'Hiba az SQL-ben' });
         }
 
         if (result.length === 0) {
-            return res.status(404).json({ error: 'A felhasználó nem található' });
+            return res.status(404).json({ error: 'Nincs még rendelés' });
         }
 
-        const user = result[0];
-        bcrypt.compare(password, user.password, (err, isMatch) => {
-            if (isMatch) {
-                const token = jwt.sign({ id: user.user_id },
-                    JWT_SECRET, { expiresIn: '1y' });
-
-                res.cookie('auth_token', token, {
-                    httpOnly: true,
-                    secure: true,
-                    sameSite: 'none',
-                    maxAge: 1000 * 60 * 60 * 24 * 30 * 12
-                });
-                return res.status(200).json({ message: 'Sikeres bejelentkezés' });
-            } else {
-                res.status(401).json({ error: 'Rossz a jelszó' });
-            }
-        });
+        return res.status(200).json(result);
     });
 });
 
-// logout
-app.post('/api/logout', authenticateToken, (req, res) => {
-    res.clearCookie('auth_token', {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'none'
-    });
-    return res.status(200).json({ message: 'Sikeres kijelentkezés!' });
-});
-
-// tesztelés a jwt-re
-app.get('/api/logintest', authenticateToken, (req, res) => {
-    return res.status(200).json({ message: 'bent vagy' });
-});
-
-// profil tesztelése, javításra váró
-app.put('/api/editprofile', authenticateToken, upload.single('profile_pic'), (req, res) => {
-    const { name, psw } = req.body;
+// rendelt termékek lekérdezése
+app.get('/api/orderedItems', authenticateToken, (req, res) => {
     const user_id = req.user.id;
-    const profile_pic = req.file ? req.file.filename : null;
-
-    if (!validator.isLength(psw, { min: 6 })) {
-        return res.status(400).json({ error: 'A jelszónak legalább 6 hosszúnak kell lenni' });
-    }
-
-    const sql = 'UPDATE users SET name = COALESCE(NULLIF(?, ""), name), psw = COALESCE(NULLIF(?, ""), psw), profile_pic = COALESCE(NULLIF(?, ""), profile_pic)  WHERE user_id = ?';
-
-    bcrypt.hash(psw, 10, (err, hash) => {
+    const sqlOrderID = 'SELECT order_id FROM orders WHERE user_id = ?';
+    const sql = 'SELECT order_items.product_id, order_items.quantity, order_items.unit_price, products.product_name FROM order_items JOIN products ON order_items.product_id = products.product_id WHERE order_items.order_id = ?';
+    pool.query(sqlOrderID, [user_id], (err, result) => {
         if (err) {
-            return res.status(500).json({ error: 'Hiba a sózáskor!' });
+            return res.status(500).json({ error: 'Hiba az SQL-ben' });
         }
 
-        pool.query(sql, [name, hash, profile_pic, user_id], (err, result) => {
+        if (result.length === 0) {
+            return res.status(404).json({ error: 'Nincs még rendelés' });
+        }
+
+        const order_id = result[0].order_id;
+        pool.query(sql, [order_id], (err, result) => {
             if (err) {
                 return res.status(500).json({ error: 'Hiba az SQL-ben' });
             }
 
-            return res.status(200).json({ message: 'Profil frissítve' });
+            if (result.length === 0) {
+                return res.status(404).json({ error: 'Nincs még rendelt termék' });
+            }
+
+            return res.status(200).json(result);
+        });
+    });
+});
+
+// Rendelés törlése
+app.delete('/api/deleteOrder/:id', authenticateToken, (req, res) => {
+    const user_id = req.params.id;
+
+    const sql = 'DELETE FROM orders WHERE user_id = ?';
+    const sqlDeleteOrder_Items = 'DELETE FROM order_items WHERE order_id = ?';
+    const sqlSelectOrderId = 'SELECT order_id FROM orders WHERE user_id = ?';
+
+    pool.query(sqlSelectOrderId, [user_id], (err, result) => {
+        if (err) {
+            return res.status(500).json({ error: 'Hiba az SQL-ben' });
+        }
+
+        if (result.length === 0) {
+            return res.status(404).json({ error: 'Nincs ilyen rendelés' });
+        }
+
+        const order_id = result[0].order_id;
+
+        pool.query(sqlDeleteOrder_Items, [order_id], (err, result) => {
+            if (err) {
+                return res.status(500).json({ error: 'Hiba az SQL-ben' });
+            }
+        });
+
+        pool.query(sql, [user_id], (err, result) => {
+            if (err) {
+                return res.status(500).json({ error: 'Hiba az SQL-ben' });
+            }
+
+            return res.status(200).json({ message: 'Rendelés törölve' });
         });
     });
 });
@@ -610,13 +497,4 @@ app.delete('/api/category/delete', authenticateToken, (req, res) => {
     });
 });
 
-app.listen(PORT, HOSTNAME, () => {
-    console.log(`IP:http://${HOSTNAME}:${PORT}`);
-});
-
-/*const now = new Date();
-const year = String(now.getFullYear()).padStart(2,'0');
-const month = String(now.getMonth()+1).padStart(2,'0');
-const day = String(now.getDate()).padStart(2,'0');
-const formattedDate = `${year}-${month}-${day}`
-console.log(formattedDate);*/
+module.exports = app;
