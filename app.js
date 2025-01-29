@@ -1,13 +1,6 @@
 // sql crashel száma: 8
 const express = require('express');//i can't remember
-const mysql = require('mysql2');//sql database
-const bcrypt = require('bcrypt');//crypting passwords
-const dotenv = require('dotenv');//storing psw
-const jwt = require('jsonwebtoken');//cookies
-const multer = require('multer');//images
-const fs = require('fs');
 const path = require('path');
-const validator = require('validator');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 
@@ -32,7 +25,7 @@ app.use(cors({
 app.use(cookieParser())
 
 // az uploads mappa fájlok elérése
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', authenticateToken, express.static(path.join(__dirname, 'uploads')));
 
 // az általunk készített packagek használata
 app.use('/api/auth', authRoutes);
