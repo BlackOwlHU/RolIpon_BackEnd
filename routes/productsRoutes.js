@@ -5,7 +5,7 @@ const { products, newProduct, deleteProduct} = require('../controllers/productsC
 
 const router = express.Router();
 
-router.get('/getProducts', authenticateToken, products);
+router.get('/getProducts/:brand/:category', authenticateToken, products);
 router.post('/newProduct', authenticateToken, upload.single('image'), newProduct);
 router.delete('/deleteProduct', authenticateToken, deleteProduct);
 

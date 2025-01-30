@@ -4,7 +4,7 @@ const { editProfile, editPassword } = require('../controllers/profileControllers
 
 const router = express.Router();
 
-router.post('/editProfile', authenticateToken, editProfile);
-router.post('/editPassword', authenticateToken, editPassword);
+router.put('/editProfile', authenticateToken, editProfile);
+router.put('/editPassword', authenticateToken, editPassword);
 
 module.exports = router;
