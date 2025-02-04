@@ -2,6 +2,17 @@ const db = require('../models/database');
 const validator = require('validator');
 const bcrypt = require('bcrypt');
 
+const getProfile = (req, res) => {
+    const user_id = req.user.id;
+    const sql = 'SELECT * FROM users WHERE user_id = ?';
+    db.query(sql, [user_id], (err, result) => {
+        if(err){
+            return res.status(500).json({ error: 'Hiba az SQL-ben'});
+        }
+        return res.status(200).json({result});
+    })
+};
+
 // profil szállítási és csomag elküldés név és telefonszám cím szerkesztése
 const editProfile = (req, res) => {
     const { username, firstname, surname, city, postcode, address, tel } = req.body;
@@ -59,4 +70,4 @@ const editPassword = (req, res) => {
     });
 };
 
-module.exports = { editProfile, editPassword };
+module.exports = { getProfile, editProfile, editPassword };
