@@ -5,14 +5,17 @@ const bcrypt = require('bcrypt');
 const getProfile = (req, res) => {
     const user_id = req.user.id;
     const sql = 'SELECT * FROM users WHERE user_id = ?';
-    db.query(sql, [user_id], (err, result) => {
-        if(err){
-            return res.status(500).json({ error: 'Hiba az SQL-ben'});
-        }
-        return res.status(200).json({result});
-    })
-};
 
+    db.query(sql, [user_id], (err, result) => {
+        if (err) {
+            return res.status(500).json({ error: 'Hiba az SQL-ben' });
+        }
+        if (result.length === 0) {
+            return res.status(404).json({ error: 'Felhasználó nem található' });
+        }
+        return res.status(200).json(result[0]); // Küldjük vissza az első elemet
+    });
+};
 // profil szállítási és csomag elküldés név és telefonszám cím szerkesztése
 const editProfile = (req, res) => {
     const { username, firstname, surname, city, postcode, address, tel } = req.body;
