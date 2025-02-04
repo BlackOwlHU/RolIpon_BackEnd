@@ -36,6 +36,7 @@ const editPassword = (req, res) => {
         }
 
         const user_id = result[0];
+
         bcrypt.compare(oldPassword, user_id.password, (err, isMatch) => {
             if (isMatch) {
                 bcrypt.hash(newPassword, 10, (err, hash) => {

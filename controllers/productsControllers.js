@@ -3,8 +3,7 @@ const db = require('../models/database');
 // termékek lekérdezése brand és category szűrés alapján
 const products = (req, res) => {
     const {brand, category} = req.params;
-    console.log(req.params, brand, category);
-    
+    //console.log(req.params, brand, category);
     
     const sqlProducts = 'SELECT * FROM products';
     const sql = 'SELECT * FROM products WHERE brand_id = ? AND category_id = ?';
@@ -33,9 +32,7 @@ const products = (req, res) => {
                 if (result.length === 0) {
                     return res.status(404).json({ error: 'Nincs még termék2' });
                 }
-                console.log("brand");
-                
-        
+                //console.log("brand");
                 return res.status(200).json(result);
             });
         }else{
@@ -48,8 +45,7 @@ const products = (req, res) => {
                     if (result.length === 0) {
                         return res.status(404).json({ error: 'Nincs még termék3' });
                     }
-                    console.log("kategória");
-            
+                    //console.log("kategória");
                     return res.status(200).json(result);
                 });
             }else{
@@ -62,8 +58,7 @@ const products = (req, res) => {
                     if (result.length === 0) {
                         return res.status(404).json({ error: 'Nincs még termék4' });
                     }
-                    console.log("konkrét");
-
+                    //console.log("konkrét");
                     return res.status(200).json(result);
                 });
             }}
