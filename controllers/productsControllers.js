@@ -19,7 +19,7 @@ const products = (req, res) => {
             if (result.length === 0) {
                 return res.status(404).json({ error: 'Nincs még termék' });
             }
-            console.log("mind");
+            //console.log("mind");
             
             return res.status(200).json(result);
         });
@@ -66,6 +66,20 @@ const products = (req, res) => {
     } 
 };
 
+// Megadott termék lekérése
+const thisProduct = (req, res) => {
+    const product_id = req.params.product_id;
+    const sql = 'SELECT * FROM products WHERE product_id = ?';
+    db.query(sql, [product_id], (err, result) => {
+        if(err){
+            return res.status(500).json({ error: 'Hiba az SQL-ben'});
+        }
+        if(result.length === 0){
+            return res.status(404).json({ error: 'Nincs ilyen termék' });
+        }
+        return res.status(200).json(result);
+    })
+};
 
 // Új termék hozzáadása
 const newProduct = (req, res) => {
@@ -138,4 +152,4 @@ const deleteProduct = (req, res) => {
     });
 };
 
-module.exports = { products, newProduct, deleteProduct };
+module.exports = { products, thisProduct, newProduct, deleteProduct };
