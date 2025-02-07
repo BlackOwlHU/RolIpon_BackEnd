@@ -23,36 +23,46 @@ const register = (req, res) => {
     if (errors.length > 0) {
         return res.status(400).json({ errors });
     }
-
-    bcrypt.hash(password, 10, (err, hash) => {
-        if (err) {
-            return res.status(500).json({ error: 'Hiba a hashelés során' });
+    const sqlIsExist = 'SELECT * FROM users WHERE email = ?';
+    db.query(sqlIsExist, [email], (err, result) => {
+        if(err){
+            return res.status(500).json({ error: 'Hiba az email azonosítása során.' })
         }
-        const sql = 'INSERT INTO users (user_id, username, email, password) VALUES(NULL, ?, ?, ?)';
-
-        db.query(sql, [username, email, hash], (err, result) => {
-            if (err) {
-                return res.status(500).json({ error: 'Hiba a regisztráció során!' });
-            }
-
-            // Az új user_id megszerzése
-            const user_id = result.insertId;
-
-            // Automatikus kosár létrehozása a user_id alapján
-            const cartSql = 'INSERT INTO cart (user_id) VALUES (?)';
-            db.query(cartSql, [user_id], (err, cartResult) => {
+        if(result.length > 0){
+            return res.status(200).json({ message: 'Már regisztráltak ezzel a felhasználóval'});
+        }
+        if(result.length === 0){
+            bcrypt.hash(password, 10, (err, hash) => {
                 if (err) {
-                    return res.status(500).json({ error: 'Hiba a kosár létrehozása során!' });
+                    return res.status(500).json({ error: 'Hiba a hashelés során' });
                 }
-
-                // Sikeres regisztráció és kosár hozzáadása
-                res.status(201).json({
-                    message: 'Sikeres regisztráció és kosár létrehozva!',
-                    userId: user_id,
-                    cartId: cartResult.insertId,
+                const sql = 'INSERT INTO users (user_id, username, email, password) VALUES(NULL, ?, ?, ?)';
+        
+                db.query(sql, [username, email, hash], (err, result) => {
+                    if (err) {
+                        return res.status(500).json({ error: 'Hiba a regisztráció során!' });
+                    }
+        
+                    // Az új user_id megszerzése
+                    const user_id = result.insertId;
+        
+                    // Automatikus kosár létrehozása a user_id alapján
+                    const cartSql = 'INSERT INTO cart (user_id) VALUES (?)';
+                    db.query(cartSql, [user_id], (err, cartResult) => {
+                        if (err) {
+                            return res.status(500).json({ error: 'Hiba a kosár létrehozása során!' });
+                        }
+        
+                        // Sikeres regisztráció és kosár hozzáadása
+                        res.status(201).json({
+                            message: 'Sikeres regisztráció és kosár létrehozva!',
+                            userId: user_id,
+                            cartId: cartResult.insertId,
+                        });
+                    });
                 });
             });
-        });
+        }
     });
 };
 
