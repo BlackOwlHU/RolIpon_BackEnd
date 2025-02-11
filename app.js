@@ -1,4 +1,4 @@
-// sql crashel száma: 8
+// sql crashel száma: 20
 const express = require('express');//i can't remember
 const path = require('path');
 const cors = require('cors');

@@ -5,10 +5,10 @@ const products = (req, res) => {
     const {brand, category} = req.params;
     //console.log(req.params, brand, category);
     
-    const sqlProducts = 'SELECT * FROM products';
-    const sql = 'SELECT * FROM products WHERE brand_id = ? AND category_id = ?';
-    const sqlBrand = 'SELECT * FROM products WHERE brand_id = ?';
-    const sqlCategory = 'SELECT * FROM products WHERE category_id = ?';
+    const sqlProducts = 'SELECT * FROM `products` INNER JOIN brands ON products.brand_id = brands.brand_id INNER JOIN category ON products.category_id = category.category_id';
+    const sql = 'SELECT * FROM products INNER JOIN brands ON products.brand_id = brands.brand_id INNER JOIN category ON products.category_id = category.category_id WHERE products.brand_id = ? AND products.category_id = ?';
+    const sqlBrand = 'SELECT * FROM products INNER JOIN brands ON products.brand_id = brands.brand_id INNER JOIN category ON products.category_id = category.category_id WHERE products.brand_id = ?';
+    const sqlCategory = 'SELECT * FROM products INNER JOIN brands ON products.brand_id = brands.brand_id INNER JOIN category ON products.category_id = category.category_id WHERE products.category_id = ?';
     
     if (brand === "0" && category === "0") {
         db.query(sqlProducts, (err, result) => {
@@ -69,7 +69,7 @@ const products = (req, res) => {
 // Megadott termék lekérése
 const thisProduct = (req, res) => {
     const product_id = req.params.product_id;
-    const sql = 'SELECT * FROM products WHERE product_id = ?';
+    const sql = 'SELECT * FROM products INNER JOIN brands ON products.brand_id = brands.brand_id INNER JOIN category ON products.category_id = category.category_id WHERE product_id = ?';
     db.query(sql, [product_id], (err, result) => {
         if(err){
             return res.status(500).json({ error: 'Hiba az SQL-ben'});
