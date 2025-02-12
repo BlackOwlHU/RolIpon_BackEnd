@@ -7,7 +7,7 @@ const getCart = (req, res) => {
     // Get the user's cart ID
     db.query('SELECT cart_id FROM cart WHERE user_id = ?', [user_id], (err, results) => {
         if (err) {
-            return res.status(500).json({ error: 'Database error!' });
+            return res.status(500).json({ error: 'Database error! 1' });
         }
 
         if (results.length === 0) {
@@ -22,7 +22,8 @@ const getCart = (req, res) => {
                 products.product_name,
                 (products.price*cart_items.quantity) AS total_price,
                 products.price,
-                cart_items.quantity
+                cart_items.quantity,
+                image
             FROM cart_items
             JOIN products ON cart_items.product_id = products.product_id
             WHERE cart_items.cart_id = ?
@@ -30,10 +31,10 @@ const getCart = (req, res) => {
 
         db.query(sql, [cart_id], (err, results) => {
             if (err) {
-                return res.status(500).json({ error: 'Database error!' });
+                return res.status(500).json({ error: 'Database error! 2' });
             }
             if (results.length === 0) {
-                return res.status(404).json({ error: 'No items in cart!' });
+                return res.status(404).json({ error: 'Nincs termék a kosárban!' });
             }
 
             return res.status(200).json(results);
@@ -53,7 +54,7 @@ const addCart = (req, res) => {
     // Check if the product exists
     db.query('SELECT * FROM products WHERE product_id = ?', [product_id], (err, results) => {
         if (err) {
-            return res.status(500).json({ error: 'Database error!' });
+            return res.status(500).json({ error: 'Database error! 1' });
         }
 
         if (results.length === 0) {
@@ -63,28 +64,38 @@ const addCart = (req, res) => {
         // Get the user's cart ID
         db.query('SELECT cart_id FROM cart WHERE user_id = ?', [user_id], (err, results) => {
             if (err) {
-                return res.status(500).json({ error: 'Database error!' });
+                return res.status(500).json({ error: 'Database error! 2' });
             }
 
             let cart_id;
-            if (results.length === 0) {
-                // Create a new cart if the user doesn't have one
-                db.query('INSERT INTO carts (user_id) VALUES (?)', [user_id], (err, result) => {
-                    if (err) {
-                        return res.status(500).json({ error: 'Database error!' });
+            db.query('SELECT * FROM cart_items WHERE product_id = ? AND  cart_id = ?', [product_id, cart_id], (err, results) => {
+                if(err){
+                    return res.status(500).json({ error: 'Database error! 3' });
+                }
+                if(results.length > 0){
+                    return res.status(200).json({ message: 'Van már ilyen termék a kosárban!' });
+                }
+                else{
+                    if (results.length === 0) {
+                        // Create a new cart if the user doesn't have one
+                        db.query('INSERT INTO carts (user_id) VALUES (?)', [user_id], (err, result) => {
+                            if (err) {
+                                return res.status(500).json({ error: 'Database error! 4' });
+                            }
+                            return res.status(201).json({ message: 'Kosár elkészítve!' });
+                        });
+                    } else {
+                        cart_id = results[0].cart_id;
+                        const sqlInsert = 'INSERT INTO cart_items (cart_id, product_id, quantity) VALUES (?, ?, ?)';
+                        db.query(sqlInsert, [cart_id, product_id, quantity], (err, result) => {
+                            if (err) {
+                                return res.status(500).json({ error: 'Database error! 5' });
+                            }
+                            return res.status(201).json({ message: 'Termék felvéve!' });
+                        });
                     }
-                    return res.status(201).json({ message: 'Cart created!' });
-                });
-            } else {
-                cart_id = results[0].cart_id;
-                const sqlInsert = 'INSERT INTO cart_items (cart_id, product_id, quantity) VALUES (?, ?, ?)';
-                db.query(sqlInsert, [cart_id, product_id, quantity], (err, result) => {
-                    if (err) {
-                        return res.status(500).json({ error: 'Database error!' });
-                    }
-                    return res.status(201).json({ message: 'Product added to cart!' });
-                });
-            }
+                }
+            });
         });
     });
 };
@@ -92,7 +103,7 @@ const addCart = (req, res) => {
 // termék kivétele kosárból
 const removeCart = (req, res) => {
     const user_id = req.user.id;
-    const { cart_items_id } = req.body;
+    const { cart_items_id } = req.params;
 
     if (!cart_items_id) {
         return res.status(400).json({ error: 'Cart item ID is required!' });
@@ -111,10 +122,10 @@ const removeCart = (req, res) => {
         }
 
         if (result.affectedRows === 0) {
-            return res.status(404).json({ error: 'Cart item not found!' });
+            return res.status(404).json({ error: 'Nincs ilyen termék a kosárban!' });
         }
 
-        return res.status(200).json({ message: 'Cart item removed!' });
+        return res.status(200).json({ message: 'Kosárban lévő termék törölve!' });
     });
 };
 
