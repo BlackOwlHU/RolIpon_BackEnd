@@ -54,7 +54,7 @@ const addCart = (req, res) => {
     // Check if the product exists
     db.query('SELECT * FROM products WHERE product_id = ?', [product_id], (err, results) => {
         if (err) {
-            return res.status(500).json({ error: 'Database error! 1' });
+            return res.status(500).json({ error: 'Database error!' });
         }
 
         if (results.length === 0) {
@@ -64,38 +64,37 @@ const addCart = (req, res) => {
         // Get the user's cart ID
         db.query('SELECT cart_id FROM cart WHERE user_id = ?', [user_id], (err, results) => {
             if (err) {
-                return res.status(500).json({ error: 'Database error! 2' });
+                return res.status(500).json({ error: 'Database error!' });
             }
 
             let cart_id;
-            db.query('SELECT * FROM cart_items WHERE product_id = ? AND  cart_id = ?', [product_id, cart_id], (err, results) => {
+            if (results.length === 0) {
+                // Create a new cart if the user doesn't have one
+                db.query('INSERT INTO carts (user_id) VALUES (?)', [user_id], (err, result) => {
+                    if (err) {
+                        return res.status(500).json({ error: 'Database error!' });
+                    }
+                    return res.status(201).json({ message: 'Kosár elkészítve!' });
+                });
+            }
+            cart_id = results[0].cart_id;
+            db.query('SELECT * FROM cart_items WHERE product_id = ? AND cart_id = ?', [product_id, cart_id], (err, results) => {
                 if(err){
-                    return res.status(500).json({ error: 'Database error! 3' });
+                    return res.status(500).json({ error: 'Database error!' });
                 }
                 if(results.length > 0){
-                    return res.status(200).json({ message: 'Van már ilyen termék a kosárban!' });
+                    return res.status(201).json({ message: 'Ez a termék már a kosárban van' });
                 }
                 else{
-                    if (results.length === 0) {
-                        // Create a new cart if the user doesn't have one
-                        db.query('INSERT INTO carts (user_id) VALUES (?)', [user_id], (err, result) => {
-                            if (err) {
-                                return res.status(500).json({ error: 'Database error! 4' });
-                            }
-                            return res.status(201).json({ message: 'Kosár elkészítve!' });
-                        });
-                    } else {
-                        cart_id = results[0].cart_id;
-                        const sqlInsert = 'INSERT INTO cart_items (cart_id, product_id, quantity) VALUES (?, ?, ?)';
-                        db.query(sqlInsert, [cart_id, product_id, quantity], (err, result) => {
-                            if (err) {
-                                return res.status(500).json({ error: 'Database error! 5' });
-                            }
-                            return res.status(201).json({ message: 'Termék felvéve!' });
-                        });
-                    }
+                    const sqlInsert = 'INSERT INTO cart_items (cart_id, product_id, quantity) VALUES (?, ?, ?)';
+                    db.query(sqlInsert, [cart_id, product_id, quantity], (err, result) => {
+                        if (err) {
+                            return res.status(500).json({ error: 'Database error!' });
+                        }
+                        return res.status(201).json({ message: 'Termék felvéve!' });
+                    });
                 }
-            });
+            })
         });
     });
 };
