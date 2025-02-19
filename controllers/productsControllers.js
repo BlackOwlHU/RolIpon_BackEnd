@@ -17,7 +17,7 @@ const products = (req, res) => {
             }
     
             if (result.length === 0) {
-                return res.status(404).json({ error: 'Nincs még termék' });
+                return res.status(200).json([]);
             }
             //console.log("mind");
             
@@ -30,7 +30,7 @@ const products = (req, res) => {
                     return res.status(500).json({ error: 'Hiba az SQL-ben' });
                 }
                 if (result.length === 0) {
-                    return res.status(404).json({ error: 'Nincs még termék2' });
+                    return res.status(200).json([]);
                 }
                 //console.log("brand");
                 return res.status(200).json(result);
@@ -43,7 +43,7 @@ const products = (req, res) => {
                     }
             
                     if (result.length === 0) {
-                        return res.status(404).json({ error: 'Nincs még termék3' });
+                        return res.status(200).json([]);
                     }
                     //console.log("kategória");
                     return res.status(200).json(result);
@@ -56,7 +56,7 @@ const products = (req, res) => {
                     }
             
                     if (result.length === 0) {
-                        return res.status(404).json({ error: 'Nincs még termék4' });
+                        return res.status(200).json([]);
                     }
                     //console.log("konkrét");
                     return res.status(200).json(result);
