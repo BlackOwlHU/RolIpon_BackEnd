@@ -128,8 +128,38 @@ const removeCart = (req, res) => {
     });
 };
 
+const putQuantity = (req, res) => {
+    const user_id = req.user.id;
+    const { cart_items_id } = req.params;
+    const { quantity } = req.body;
+
+    if (!cart_items_id || !quantity) {
+        return res.status(400).json({ error: 'Cart item ID and quantity are required!' });
+    }
+
+    const sql = `
+        UPDATE cart_items
+        JOIN cart ON cart_items.cart_id = cart.cart_id
+        SET cart_items.quantity = ?
+        WHERE cart.user_id = ? AND cart_items.cart_items_id = ?
+    `;
+
+    db.query(sql, [quantity, user_id, cart_items_id], (err, result) => {
+        if (err) {
+            return res.status(500).json({ error: 'Database error!' });
+        }
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Nincs ilyen termék a kosárban!' });
+        }
+
+        return res.status(200).json({ message: 'Kosárban lévő termék módosítva!' });
+    });
+}
+
 module.exports = {
     getCart,
     addCart,
-    removeCart
+    removeCart,
+    putQuantity
 };
