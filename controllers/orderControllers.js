@@ -18,29 +18,19 @@ const ordersGet =(req, res) => {
 
 const orderedItems = (req, res) => {
     const user_id = req.user.id;
-    const sqlOrderID = 'SELECT order_id FROM orders WHERE user_id = ?';
+    const order_id = req.params.order_id;
     const sql = 'SELECT order_items.product_id, order_items.quantity, order_items.unit_price, products.product_name FROM order_items JOIN products ON order_items.product_id = products.product_id WHERE order_items.order_id = ?';
-    db.query(sqlOrderID, [user_id], (err, result) => {
+
+    db.query(sql, [order_id], (err, result) => {
         if (err) {
             return res.status(500).json({ error: 'Hiba az SQL-ben' });
         }
 
         if (result.length === 0) {
-            return res.status(404).json({ error: 'Nincs még rendelés' });
+            return res.status(404).json({ error: 'Nincs még rendelt termék' });
         }
 
-        const order_id = result[0].order_id;
-        db.query(sql, [order_id], (err, result) => {
-            if (err) {
-                return res.status(500).json({ error: 'Hiba az SQL-ben' });
-            }
-
-            if (result.length === 0) {
-                return res.status(404).json({ error: 'Nincs még rendelt termék' });
-            }
-
-            return res.status(200).json(result);
-        });
+        return res.status(200).json(result);
     });
 };
 
@@ -106,10 +96,11 @@ const createOrder = (req, res) => {
 
 const deleteOrder = (req, res) => {
     const user_id = req.params.id;
+    const order_id = req.params.id;
 
-    const sql = 'DELETE FROM orders WHERE user_id = ?';
+    const sql = 'DELETE FROM orders WHERE order_id = ?';
     const sqlDeleteOrder_Items = 'DELETE FROM order_items WHERE order_id = ?';
-    const sqlSelectOrderId = 'SELECT order_id FROM orders WHERE user_id = ?';
+    const sqlSelectOrderId = 'SELECT order_id FROM orders WHERE order_id = ?';
 
     db.query(sqlSelectOrderId, [user_id], (err, result) => {
         if (err) {
@@ -120,15 +111,13 @@ const deleteOrder = (req, res) => {
             return res.status(404).json({ error: 'Nincs ilyen rendelés' });
         }
 
-        const order_id = result[0].order_id;
-
         db.query(sqlDeleteOrder_Items, [order_id], (err, result) => {
             if (err) {
-                return res.status(500).json({ error: 'Hiba az SQL-ben' });
+                return res.status(500).json({ error: 'Hiba az SQL-ben, rendelési termékek.' });
             }
         });
 
-        db.query(sql, [user_id], (err, result) => {
+        db.query(sql, [order_id], (err, result) => {
             if (err) {
                 return res.status(500).json({ error: 'Hiba az SQL-ben' });
             }

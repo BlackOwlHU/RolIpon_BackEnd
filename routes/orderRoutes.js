@@ -5,7 +5,7 @@ const { ordersGet, orderedItems, createOrder, deleteOrder} = require('../control
 const router = express.Router();
 
 router.get('/orders', authenticateToken, ordersGet);
-router.get('/orderedItems', authenticateToken, orderedItems);
+router.get('/orderedItems/:order_id', authenticateToken, orderedItems);
 router.post('/createOrder/:cart_id', authenticateToken, createOrder);
 router.delete('/deleteOrder/:id', authenticateToken, deleteOrder);
 
