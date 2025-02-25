@@ -17,7 +17,6 @@ const ordersGet =(req, res) => {
 };
 
 const orderedItems = (req, res) => {
-    const user_id = req.user.id;
     const order_id = req.params.order_id;
     const sql = 'SELECT order_items.product_id, order_items.quantity, order_items.unit_price, products.product_name FROM order_items JOIN products ON order_items.product_id = products.product_id WHERE order_items.order_id = ?';
 

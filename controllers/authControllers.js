@@ -82,10 +82,10 @@ const login = (req, res) => {
         return res.status(400).json({ errors });
     }
 
-    const sql = 'SELECT * FROM users WHERE email LIKE ?';
+    const sql = 'SELECT * FROM users WHERE email = ?';
     db.query(sql, [email], (err, result) => {
         if (err) {
-            return res.status(500).json({ error: 'Hiba az SQL-ben' })
+            return res.status(500).json({ error: 'Hiba az SQL-ben' });
         }
 
         if (result.length === 0) {
@@ -95,8 +95,11 @@ const login = (req, res) => {
         const user = result[0];
         bcrypt.compare(password, user.password, (err, isMatch) => {
             if (isMatch) {
-                const token = jwt.sign({ id: user.user_id },
-                    JWT_SECRET, { expiresIn: '1y' });
+                const token = jwt.sign(
+                    { id: user.user_id, isAdmin: user.admin }, // Admin státusz hozzáadása
+                    JWT_SECRET,
+                    { expiresIn: '1y' }
+                );
 
                 res.cookie('auth_token', token, {
                     httpOnly: true,
@@ -104,7 +107,7 @@ const login = (req, res) => {
                     sameSite: 'none',
                     maxAge: 1000 * 60 * 60 * 24 * 30 * 12
                 });
-                return res.status(200).json({ message: 'Sikeres bejelentkezés' });
+                return res.status(200).json({ message: 'Sikeres bejelentkezés', isAdmin: user.admin });
             } else {
                 res.status(401).json({ error: 'Rossz a jelszó' });
             }

@@ -2,8 +2,8 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Gép: 127.0.0.1
--- Létrehozás ideje: 2025. Feb 04. 08:47
+-- Gép: 127.0.0.1:3377
+-- Létrehozás ideje: 2025. Feb 25. 08:55
 -- Kiszolgáló verziója: 10.4.32-MariaDB
 -- PHP verzió: 8.2.12
 
@@ -61,7 +61,10 @@ INSERT INTO `cart` (`cart_id`, `user_id`) VALUES
 (2, 2),
 (3, 3),
 (4, 4),
-(5, 5);
+(5, 5),
+(6, 6),
+(7, 7),
+(8, 8);
 
 -- --------------------------------------------------------
 
@@ -75,6 +78,13 @@ CREATE TABLE `cart_items` (
   `product_id` int(10) UNSIGNED NOT NULL,
   `quantity` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- A tábla adatainak kiíratása `cart_items`
+--
+
+INSERT INTO `cart_items` (`cart_items_id`, `cart_id`, `product_id`, `quantity`) VALUES
+(55, 1, 2, 1);
 
 -- --------------------------------------------------------
 
@@ -115,7 +125,9 @@ CREATE TABLE `orders` (
 --
 
 INSERT INTO `orders` (`order_id`, `user_id`, `order_date`, `total_amount`) VALUES
-(24, 1, '2025-01-24 10:02:08', 520000.00);
+(24, 1, '2025-01-24 10:02:08', 520000.00),
+(25, 1, '2025-02-19 07:31:13', 185000.00),
+(28, 1, '2025-02-20 09:30:32', 140000.00);
 
 -- --------------------------------------------------------
 
@@ -137,7 +149,10 @@ CREATE TABLE `order_items` (
 
 INSERT INTO `order_items` (`order_item_id`, `order_id`, `product_id`, `quantity`, `unit_price`) VALUES
 (25, 24, 2, 3, 150000.00),
-(26, 24, 1, 2, 35000.00);
+(26, 24, 1, 2, 35000.00),
+(27, 25, 1, 1, 35000.00),
+(28, 25, 2, 1, 150000.00),
+(31, 28, 1, 4, 35000.00);
 
 -- --------------------------------------------------------
 
@@ -180,19 +195,23 @@ CREATE TABLE `users` (
   `city` varchar(255) NOT NULL,
   `postcode` int(11) NOT NULL,
   `address` varchar(255) NOT NULL,
-  `tel` varchar(30) NOT NULL
+  `tel` varchar(30) NOT NULL,
+  `admin` tinyint(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- A tábla adatainak kiíratása `users`
 --
 
-INSERT INTO `users` (`user_id`, `username`, `email`, `password`, `firstname`, `surname`, `city`, `postcode`, `address`, `tel`) VALUES
-(1, 'BlackOwlHU', 'blackowlhu@gmail.com', '$2b$10$SAs9G7oXGg3ZAuj7/hg3me9uG.PovxOEhM9ziwcliJZvPfKN2PUce', 'Szabó', 'Roland', 'Hajdúhadház', 4242, 'István Király u. 1', '06204206969'),
-(2, 'Black', 'black@gmail.com', '$2b$10$SAs9G7oXGg3ZAuj7/hg3me9uG.PovxOEhM9ziwcliJZvPfKN2PUce', '', '', '', 0, '', ''),
-(3, 'dezso', 'dezso@gmail.com', '$2b$10$SAs9G7oXGg3ZAuj7/hg3me9uG.PovxOEhM9ziwcliJZvPfKN2PUce', '', '', '', 0, '', ''),
-(4, 'dezso2', 'dezso2@gmail.com', '$2b$10$SAs9G7oXGg3ZAuj7/hg3me9uG.PovxOEhM9ziwcliJZvPfKN2PUce', '', '', '', 0, '', ''),
-(5, 'Owl', 'owl@gmail.com', '$2b$10$Di6u4bYh/bfnJCh3WFttmOjcarybU31JGg7hmye.dGxwDgEwWM3r6', '', '', '', 0, '', '');
+INSERT INTO `users` (`user_id`, `username`, `email`, `password`, `firstname`, `surname`, `city`, `postcode`, `address`, `tel`, `admin`) VALUES
+(1, 'BlackOwlHU', 'blackowlhu@gmail.com', '$2b$10$bSoij9aI5zvTMG.qyr5/9.Fw1Hs5SiSBk16sUMELAe8UTbZMtnrdu', 'Szabó', 'Roland', 'Hajdúhadház', 4242, 'István Király u. 1', '06204206969', 0),
+(2, 'Black', 'black@gmail.com', '$2b$10$bSoij9aI5zvTMG.qyr5/9.Fw1Hs5SiSBk16sUMELAe8UTbZMtnrdu', '', '', '', 0, '', '', 1),
+(3, 'dezso', 'dezso@gmail.com', '$2b$10$bSoij9aI5zvTMG.qyr5/9.Fw1Hs5SiSBk16sUMELAe8UTbZMtnrdu', '', '', '', 0, '', '', 0),
+(4, 'dezso2', 'dezso2@gmail.com', '$2b$10$bSoij9aI5zvTMG.qyr5/9.Fw1Hs5SiSBk16sUMELAe8UTbZMtnrdu', '', '', '', 0, '', '', 0),
+(5, 'Owl', 'owl@gmail.com', '$2b$10$bSoij9aI5zvTMG.qyr5/9.Fw1Hs5SiSBk16sUMELAe8UTbZMtnrdu', '', '', '', 0, '', '', 0),
+(6, 'ozsed', 'ozsed@gmail.com', '$2b$10$bSoij9aI5zvTMG.qyr5/9.Fw1Hs5SiSBk16sUMELAe8UTbZMtnrdu', '', '', '', 0, '', '', 0),
+(7, 'aladin', 'aladar@mail.hu', '$2b$10$bSoij9aI5zvTMG.qyr5/9.Fw1Hs5SiSBk16sUMELAe8UTbZMtnrdu', '', '', '', 0, '', '', 0),
+(8, 'zohan', 'zohan@gmail.com', '$2b$10$bSoij9aI5zvTMG.qyr5/9.Fw1Hs5SiSBk16sUMELAe8UTbZMtnrdu', '', '', '', 0, '', '', 0);
 
 --
 -- Indexek a kiírt táblákhoz
@@ -268,13 +287,13 @@ ALTER TABLE `brands`
 -- AUTO_INCREMENT a táblához `cart`
 --
 ALTER TABLE `cart`
-  MODIFY `cart_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `cart_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT a táblához `cart_items`
 --
 ALTER TABLE `cart_items`
-  MODIFY `cart_items_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
+  MODIFY `cart_items_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=56;
 
 --
 -- AUTO_INCREMENT a táblához `category`
@@ -286,13 +305,13 @@ ALTER TABLE `category`
 -- AUTO_INCREMENT a táblához `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `order_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+  MODIFY `order_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
 
 --
 -- AUTO_INCREMENT a táblához `order_items`
 --
 ALTER TABLE `order_items`
-  MODIFY `order_item_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
+  MODIFY `order_item_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
 
 --
 -- AUTO_INCREMENT a táblához `products`
@@ -304,7 +323,7 @@ ALTER TABLE `products`
 -- AUTO_INCREMENT a táblához `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `user_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- Megkötések a kiírt táblákhoz
