@@ -126,9 +126,46 @@ const deleteOrder = (req, res) => {
     });
 };
 
+const getAllOrders = (req, res) => {
+    const sql = `
+        SELECT 
+            orders.order_id,
+            orders.order_date,
+            orders.total_amount,
+            users.firstname,
+            users.surname,
+            users.city,
+            users.postcode,
+            users.address,
+            users.tel,
+            order_items.product_id,
+            order_items.quantity,
+            order_items.unit_price,
+            products.product_name
+        FROM orders
+        JOIN users ON orders.user_id = users.user_id
+        JOIN order_items ON orders.order_id = order_items.order_id
+        JOIN products ON order_items.product_id = products.product_id
+        ORDER BY orders.order_date DESC
+    `;
+
+    db.query(sql, (err, result) => {
+        if (err) {
+            return res.status(500).json({ error: 'Hiba az SQL-ben' });
+        }
+
+        if (result.length === 0) {
+            return res.status(404).json({ error: 'Nincs rendelés' });
+        }
+
+        return res.status(200).json(result);
+    });
+};
+
 module.exports = {
     ordersGet,
     orderedItems,
     createOrder,
-    deleteOrder
+    deleteOrder,
+    getAllOrders
 };
