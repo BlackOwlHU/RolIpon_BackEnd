@@ -1,6 +1,6 @@
 const db = require('../models/database');
 const validator = require('validator');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 const getProfile = (req, res) => {
     const user_id = req.user.id;
