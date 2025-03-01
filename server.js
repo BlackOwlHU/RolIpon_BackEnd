@@ -1,6 +1,6 @@
 app = require('./app');
 const { PORT, HOSTNAME } = require('./config/dotenvConfig').config;
 
-app.listen(PORT, HOSTNAME, ()=>{
-    console.log(`IP:http://${HOSTNAME}:${PORT}`);
+app.listen(PORT, ()=>{
+    console.log(`IP:https://${HOSTNAME}:${PORT}`);
 });
