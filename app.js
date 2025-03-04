@@ -19,7 +19,7 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors({
-    origin: 'http://127.0.0.1:5500',
+    origin: 'https://rolipon.netlify.app/',
     credentials: true
 }));
 app.use(cookieParser())
