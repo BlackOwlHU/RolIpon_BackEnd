@@ -39,6 +39,7 @@ const register = (req, res) => {
                 const sql = 'INSERT INTO users (user_id, username, email, password) VALUES(NULL, ?, ?, ?)';
         
                 db.query(sql, [username, email, hash], (err, result) => {
+                    console.log(err)
                     if (err) {
                         return res.status(500).json({ error: 'Hiba a regisztráció során!' });
                     }
