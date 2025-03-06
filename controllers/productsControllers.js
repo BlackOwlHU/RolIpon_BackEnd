@@ -6,9 +6,9 @@ const products = (req, res) => {
     //console.log(req.params, brand, category);
     
     const sqlProducts = 'SELECT products.product_id, products.product_name, category.category, brands.brand, products.price, products.is_in_stock, products.description, products.image FROM `products` INNER JOIN brands ON products.brand_id = brands.brand_id INNER JOIN category ON products.category_id = category.category_id';
-    const sql = 'SELECT * FROM products INNER JOIN brands ON products.brand_id = brands.brand_id INNER JOIN category ON products.category_id = category.category_id WHERE products.brand_id = ? AND products.category_id = ?';
-    const sqlBrand = 'SELECT * FROM products INNER JOIN brands ON products.brand_id = brands.brand_id INNER JOIN category ON products.category_id = category.category_id WHERE products.brand_id = ?';
-    const sqlCategory = 'SELECT * FROM products INNER JOIN brands ON products.brand_id = brands.brand_id INNER JOIN category ON products.category_id = category.category_id WHERE products.category_id = ?';
+    const sql = 'SELECT products.product_id, products.product_name, category.category, brands.brand, products.price, products.is_in_stock, products.description, products.image FROM products INNER JOIN brands ON products.brand_id = brands.brand_id INNER JOIN category ON products.category_id = category.category_id WHERE products.brand_id = ? AND products.category_id = ?';
+    const sqlBrand = 'SELECT products.product_id, products.product_name, category.category, brands.brand, products.price, products.is_in_stock, products.description, products.image FROM products INNER JOIN brands ON products.brand_id = brands.brand_id INNER JOIN category ON products.category_id = category.category_id WHERE products.brand_id = ?';
+    const sqlCategory = 'SELECT products.product_id, products.product_name, category.category, brands.brand, products.price, products.is_in_stock, products.description, products.image FROM products INNER JOIN brands ON products.brand_id = brands.brand_id INNER JOIN category ON products.category_id = category.category_id WHERE products.category_id = ?';
     
     if (brand === "0" && category === "0") {
         db.query(sqlProducts, (err, result) => {
@@ -69,7 +69,7 @@ const products = (req, res) => {
 // Megadott termék lekérése
 const thisProduct = (req, res) => {
     const product_id = req.params.product_id;
-    const sql = 'SELECT * FROM products INNER JOIN brands ON products.brand_id = brands.brand_id INNER JOIN category ON products.category_id = category.category_id WHERE product_id = ?';
+    const sql = 'SELECT products.product_id, products.product_name, category.category, brands.brand, products.price, products.is_in_stock, products.description, products.image FROM products INNER JOIN brands ON products.brand_id = brands.brand_id INNER JOIN category ON products.category_id = category.category_id WHERE product_id = ?';
     db.query(sql, [product_id], (err, result) => {
         if(err){
             return res.status(500).json({ error: 'Hiba az SQL-ben'});
