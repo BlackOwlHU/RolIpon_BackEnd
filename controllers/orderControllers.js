@@ -59,7 +59,7 @@ const createOrder = (req, res) => {
         const order_id = result.insertId;
         db.query(sqlSelectCart_Items, [cart_id], (err, result) => {
             if (err) {
-                return res.status(500).json({ error: 'Hiba az SQL-ben' });
+                return res.status(500).json({ error: 'Hiba az SQL-ben 2' });
             }
 
             if (result.length === 0) {
@@ -73,18 +73,18 @@ const createOrder = (req, res) => {
                 total_amount += Number(item.total_price);
                 db.query(sqlInsertOrder_Items, [order_id, item.product_id, item.quantity, item.price], (err, result) => {
                     if (err) {
-                        return res.status(500).json({ error: 'Hiba az SQL-ben' });
+                        return res.status(500).json({ error: 'Hiba az SQL-ben 3' });
                     }
                 });
             const sqlDeleteCart_Items = 'DELETE FROM cart_items WHERE cart_id = ?';
             db.query(sqlDeleteCart_Items, [cart_id], (err, result) => {
                 if (err) {
-                    return res.status(500).json({ error: 'Hiba az SQL-ben' });
+                    return res.status(500).json({ error: 'Hiba az SQL-ben 4' });
                 }
                 const sqlUpdateOrder = 'UPDATE orders SET total_amount = ? WHERE order_id = ?';
                 db.query(sqlUpdateOrder, [total_amount, order_id], (err, result) => {
                     if (err) {
-                        return res.status(500).json({ error: 'Hiba az SQL-ben' });
+                        return res.status(500).json({ error: 'Hiba az SQL-ben 5' });
                     }
                     });
                 });
