@@ -36,6 +36,7 @@ const orderedItems = (req, res) => {
 const createOrder = (req, res) => {
     const user_id = req.user.id;
     const cart_id = req.params.cart_id;
+    const { city, address, postcode, tel } = req.body;
     var item_result = [];
     var total_amount = 0;
 
@@ -50,8 +51,8 @@ const createOrder = (req, res) => {
                 FROM cart_items
                 JOIN products ON cart_items.product_id = products.product_id
                 WHERE cart_items.cart_id = ?`;
-    const sqlInsertOrder = 'INSERT INTO orders (order_id, user_id, order_date) VALUES (NULL, ?, NOW())';
-    db.query(sqlInsertOrder, [user_id], (err, result) => {
+    const sqlInsertOrder = 'INSERT INTO orders (order_id, user_id, order_date, city, address, postcode, tel) VALUES (NULL, ?, NOW(), ?, ?, ?, ?)';
+    db.query(sqlInsertOrder, [user_id, city, address, postcode, tel], (err, result) => {
         if (err) {
             return res.status(500).json({ error: 'Hiba az SQL-ben' });
         }
@@ -134,18 +135,12 @@ const getAllOrders = (req, res) => {
             orders.total_amount,
             users.firstname,
             users.surname,
-            users.city,
-            users.postcode,
-            users.address,
-            users.tel,
-            order_items.product_id,
-            order_items.quantity,
-            order_items.unit_price,
-            products.product_name
+            orders.city,
+            orders.postcode,
+            orders.address,
+            orders.tel
         FROM orders
         JOIN users ON orders.user_id = users.user_id
-        JOIN order_items ON orders.order_id = order_items.order_id
-        JOIN products ON order_items.product_id = products.product_id
         ORDER BY orders.order_date DESC
     `;
 
@@ -162,10 +157,37 @@ const getAllOrders = (req, res) => {
     });
 };
 
+const getAllOrdersItems = (req, res) => {
+    const sql = `
+        SELECT 
+            order_items.order_id,
+            order_items.product_id,
+            order_items.quantity,
+            order_items.unit_price,
+            products.product_name
+        FROM order_items
+        JOIN products ON order_items.product_id = products.product_id
+        ORDER BY order_items.order_id
+    `;
+
+    db.query(sql, (err, result) => {
+        if (err) {
+            return res.status(500).json({ error: 'Hiba az SQL-ben' });
+        }
+
+        if (result.length === 0) {
+            return res.status(404).json({ error: 'Nincs rendelési tétel' });
+        }
+
+        return res.status(200).json(result);
+    });
+};
+
 module.exports = {
     ordersGet,
     orderedItems,
     createOrder,
     deleteOrder,
-    getAllOrders
+    getAllOrders,
+    getAllOrdersItems
 };
