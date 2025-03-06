@@ -5,7 +5,7 @@ const products = (req, res) => {
     const {brand, category} = req.params;
     //console.log(req.params, brand, category);
     
-    const sqlProducts = 'SELECT * FROM `products` INNER JOIN brands ON products.brand_id = brands.brand_id INNER JOIN category ON products.category_id = category.category_id';
+    const sqlProducts = 'SELECT products.product_id, products.product_name, category.category, brands.brand, products.price, products.is_in_stock, products.description, products.image FROM `products` INNER JOIN brands ON products.brand_id = brands.brand_id INNER JOIN category ON products.category_id = category.category_id';
     const sql = 'SELECT * FROM products INNER JOIN brands ON products.brand_id = brands.brand_id INNER JOIN category ON products.category_id = category.category_id WHERE products.brand_id = ? AND products.category_id = ?';
     const sqlBrand = 'SELECT * FROM products INNER JOIN brands ON products.brand_id = brands.brand_id INNER JOIN category ON products.category_id = category.category_id WHERE products.brand_id = ?';
     const sqlCategory = 'SELECT * FROM products INNER JOIN brands ON products.brand_id = brands.brand_id INNER JOIN category ON products.category_id = category.category_id WHERE products.category_id = ?';
