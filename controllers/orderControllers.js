@@ -53,13 +53,13 @@ const createOrder = (req, res) => {
                 WHERE cart_items.cart_id = ?`;
     const sqlInsertOrder = 'INSERT INTO orders (order_id, user_id, order_date, city, address, postcode, tel) VALUES (NULL, ?, NOW(), ?, ?, ?, ?)';
     db.query(sqlInsertOrder, [user_id, city, address, postcode, tel], (err, result) => {
-        console.log(city, address, postcode, tel);
+        //console.log(city, address, postcode, tel);
         if (err) {
-            console.log(err)
+            //console.log(err)
             return res.status(500).json({ error: 'Hiba az SQL-ben' });
         }
         const order_id = result.insertId;
-        console.log(result);
+        //console.log(result);
         
         db.query(sqlSelectCart_Items, [cart_id], (err, result) => {
             if (err) {
