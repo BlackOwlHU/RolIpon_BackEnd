@@ -86,12 +86,10 @@ const newProduct = (req, res) => {
     const { product_name, category_id, brand_id, price, is_in_stock, description } = req.body;
     const image = req.file ? req.file.filename : null;
 
-    // Ellenőrzés: Kötelező mezők
     if (!product_name || !category_id || !brand_id || !price) {
         return res.status(400).json({ error: 'Hiányzó kötelező mezők!' });
     }
 
-    // Ellenőrizzük, hogy létezik-e a megadott category_id és brand_id
     const checkSql = `
         SELECT 
             (SELECT COUNT(*) FROM category WHERE category_id = ?) AS category_exists,
@@ -109,7 +107,6 @@ const newProduct = (req, res) => {
             return res.status(400).json({ error: 'Érvénytelen category_id vagy brand_id!' });
         }
 
-        // Beszúrás a termékek táblába
         const insertSql = `
             INSERT INTO products (product_id, product_name, category_id, brand_id, price, is_in_stock, description, image)
             VALUES (NULL, ?, ?, ?, ?, ?, ?, ?)
@@ -121,7 +118,6 @@ const newProduct = (req, res) => {
                 return res.status(500).json({ error: 'Hiba a termék beszúrása során!' });
             }
 
-            // Visszaadjuk az új termék ID-ját
             res.status(201).json({
                 message: 'Új termék sikeresen hozzáadva!',
                 product_id: result.insertId,

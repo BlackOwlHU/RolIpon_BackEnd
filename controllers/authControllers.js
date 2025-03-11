@@ -39,22 +39,19 @@ const register = (req, res) => {
                 const sql = 'INSERT INTO users (user_id, username, email, password) VALUES(NULL, ?, ?, ?)';
         
                 db.query(sql, [username, email, hash], (err, result) => {
-                    console.log(err)
+                    //console.log(err)
                     if (err) {
                         return res.status(500).json({ error: 'Hiba a regisztráció során!' });
                     }
         
-                    // Az új user_id megszerzése
                     const user_id = result.insertId;
         
-                    // Automatikus kosár létrehozása a user_id alapján
                     const cartSql = 'INSERT INTO cart (user_id) VALUES (?)';
                     db.query(cartSql, [user_id], (err, cartResult) => {
                         if (err) {
                             return res.status(500).json({ error: 'Hiba a kosár létrehozása során!' });
                         }
         
-                        // Sikeres regisztráció és kosár hozzáadása
                         res.status(201).json({
                             message: 'Sikeres regisztráció és kosár létrehozva!',
                             userId: user_id,
@@ -97,7 +94,7 @@ const login = (req, res) => {
         bcrypt.compare(password, user.password, (err, isMatch) => {
             if (isMatch) {
                 const token = jwt.sign(
-                    { id: user.user_id, isAdmin: user.admin }, // Admin státusz hozzáadása
+                    { id: user.user_id, isAdmin: user.admin },
                     JWT_SECRET,
                     { expiresIn: '1y' }
                 );

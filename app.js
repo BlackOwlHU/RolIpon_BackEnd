@@ -1,5 +1,5 @@
 // sql crashel száma: 20
-const express = require('express');//i can't remember
+const express = require('express');
 const path = require('path');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');

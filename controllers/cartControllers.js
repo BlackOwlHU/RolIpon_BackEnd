@@ -4,7 +4,6 @@ const db = require('../models/database');
 const getCart = (req, res) => {
     const user_id = req.user.id;
 
-    // Get the user's cart ID
     db.query('SELECT cart_id FROM cart WHERE user_id = ?', [user_id], (err, results) => {
         if (err) {
             return res.status(500).json({ error: 'Database error! 1' });
@@ -44,14 +43,13 @@ const getCart = (req, res) => {
 
 // termék kosárhoz adása
 const addCart = (req, res) => {
-    const user_id = req.user.id; // Assuming the user ID is stored in the token
+    const user_id = req.user.id; 
     const { product_id, quantity } = req.body;
 
     if (!product_id || !quantity) {
         return res.status(400).json({ error: 'Product ID and quantity are required!' });
     }
 
-    // Check if the product exists
     db.query('SELECT * FROM products WHERE product_id = ?', [product_id], (err, results) => {
         if (err) {
             return res.status(500).json({ error: 'Database error!' });
@@ -61,7 +59,6 @@ const addCart = (req, res) => {
             return res.status(404).json({ error: 'Product not found!' });
         }
 
-        // Get the user's cart ID
         db.query('SELECT cart_id FROM cart WHERE user_id = ?', [user_id], (err, results) => {
             if (err) {
                 return res.status(500).json({ error: 'Database error!' });
@@ -69,7 +66,6 @@ const addCart = (req, res) => {
 
             let cart_id;
             if (results.length === 0) {
-                // Create a new cart if the user doesn't have one
                 db.query('INSERT INTO carts (user_id) VALUES (?)', [user_id], (err, result) => {
                     if (err) {
                         return res.status(500).json({ error: 'Database error!' });

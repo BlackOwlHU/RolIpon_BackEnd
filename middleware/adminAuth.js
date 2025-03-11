@@ -11,11 +11,11 @@ const adminAuth = (req, res, next) => {
     try {
         const decoded = jwt.verify(token, JWT_SECRET);
 
-        if (!decoded.isAdmin) {  // Ellenőrzi, hogy az admin flag 1-e
+        if (!decoded.isAdmin) {
             return res.status(403).json({ error: 'Hozzáférés megtagadva (nem admin)' });
         }
 
-        req.user = decoded;  // Hozzáadjuk a `req.user` objektumhoz
+        req.user = decoded;
         next();
     } catch (error) {
         return res.status(401).json({ error: 'Érvénytelen token' });
