@@ -9,7 +9,7 @@ router.get('/orders', authenticateToken, ordersGet);
 router.get('/orderedItems/:order_id', authenticateToken, orderedItems);
 router.post('/createOrder/:cart_id', authenticateToken, createOrder);
 router.delete('/deleteOrder/:id', authenticateToken, deleteOrder);
-router.get('getAllOrders', authenticateToken, getAllOrders);
-router.get('getAllOrdersItems', authenticateToken, getAllOrdersItems)
+router.get('/getAllOrders', authenticateToken, getAllOrders);
+router.get('/getAllOrdersItems', authenticateToken, getAllOrdersItems)
 
 module.exports = router;
