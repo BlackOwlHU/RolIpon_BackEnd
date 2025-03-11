@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const { JWT_SECRET } = require('../config/dotenvConfig').config;
 
-function adminAuth(req, res, next){
+const adminAuth = (req, res, next) => {
     const token = req.cookies.auth_token;
 
     if (!token) {
