@@ -2,68 +2,43 @@ const db = require('../models/database');
 
 // termékek lekérdezése brand és category szűrés alapján
 const products = (req, res) => {
-    const {brand, category} = req.params;
-    //console.log(req.params, brand, category);
-    
-    const sqlProducts = 'SELECT products.product_id, products.product_name, category.category, brands.brand, products.price, products.is_in_stock, products.description, products.image FROM `products` INNER JOIN brands ON products.brand_id = brands.brand_id INNER JOIN category ON products.category_id = category.category_id';
-    const sql = 'SELECT products.product_id, products.product_name, category.category, brands.brand, products.price, products.is_in_stock, products.description, products.image FROM products INNER JOIN brands ON products.brand_id = brands.brand_id INNER JOIN category ON products.category_id = category.category_id WHERE products.brand_id = ? AND products.category_id = ?';
-    const sqlBrand = 'SELECT products.product_id, products.product_name, category.category, brands.brand, products.price, products.is_in_stock, products.description, products.image FROM products INNER JOIN brands ON products.brand_id = brands.brand_id INNER JOIN category ON products.category_id = category.category_id WHERE products.brand_id = ?';
-    const sqlCategory = 'SELECT products.product_id, products.product_name, category.category, brands.brand, products.price, products.is_in_stock, products.description, products.image FROM products INNER JOIN brands ON products.brand_id = brands.brand_id INNER JOIN category ON products.category_id = category.category_id WHERE products.category_id = ?';
-    
-    if (brand === "0" && category === "0") {
-        db.query(sqlProducts, (err, result) => {
-            if (err) {
-                return res.status(500).json({ error: 'Hiba az SQL-ben' });
-            }
-    
-            if (result.length === 0) {
-                return res.status(200).json([]);
-            }
-            //console.log("mind");
-            
-            return res.status(200).json(result);
-        });
-    }else{
-        if (brand !== "0" && category === "0") {
-            db.query(sqlBrand, [brand], (err, result) => {
-                if (err) {
-                    return res.status(500).json({ error: 'Hiba az SQL-ben' });
-                }
-                if (result.length === 0) {
-                    return res.status(200).json([]);
-                }
-                //console.log("brand");
-                return res.status(200).json(result);
-            });
-        }else{
-            if (category !== "0" && brand === "0") {
-                db.query(sqlCategory, [category], (err, result) => {
-                    if (err) {
-                        return res.status(500).json({ error: 'Hiba az SQL-ben' });
-                    }
-            
-                    if (result.length === 0) {
-                        return res.status(200).json([]);
-                    }
-                    //console.log("kategória");
-                    return res.status(200).json(result);
-                });
-            }else{
-                if( brand !== "0" && category !== "0"){
-                db.query(sql, [brand, category] , (err, result) => {
-                    if (err) {
-                        return res.status(500).json({ error: 'Hiba az SQL-ben' });
-                    }
-            
-                    if (result.length === 0) {
-                        return res.status(200).json([]);
-                    }
-                    //console.log("konkrét");
-                    return res.status(200).json(result);
-                });
-            }}
+    const { brand, category } = req.params;
+    const { search } = req.query;
+
+    let sql = `
+        SELECT products.product_id, products.product_name, category.category, brands.brand, products.price, products.is_in_stock, products.description, products.image 
+        FROM products 
+        INNER JOIN brands ON products.brand_id = brands.brand_id 
+        INNER JOIN category ON products.category_id = category.category_id
+    `;
+
+    const params = [];
+
+    if (brand !== "0") {
+        sql += ' WHERE products.brand_id = ?';
+        params.push(brand);
+    }
+
+    if (category !== "0") {
+        sql += params.length ? ' AND' : ' WHERE';
+        sql += ' products.category_id = ?';
+        params.push(category);
+    }
+
+    if (search) {
+        sql += params.length ? ' AND' : ' WHERE';
+        sql += ' (products.product_name LIKE ? OR products.price LIKE ? OR products.description LIKE ?)';
+        const searchQuery = `%${search}%`;
+        params.push(searchQuery, searchQuery, searchQuery);
+    }
+
+    db.query(sql, params, (err, result) => {
+        if (err) {
+            return res.status(500).json({ error: 'Database error' });
         }
-    } 
+
+        return res.status(200).json(result);
+    });
 };
 
 // Megadott termék lekérése

@@ -1,7 +1,7 @@
 const express = require('express');
 const authenticateToken = require('../middleware/jwtAuth');
 const upload = require('../middleware/multer');
-const { products, thisProduct, newProduct, deleteProduct} = require('../controllers/productsControllers');
+const { products, thisProduct, newProduct, deleteProduct } = require('../controllers/productsControllers');
 
 const router = express.Router();
 
