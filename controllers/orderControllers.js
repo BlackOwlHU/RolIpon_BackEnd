@@ -1,6 +1,6 @@
 const db = require('../models/database');
 
-const ordersGet =(req, res) => {
+const ordersGet = (req, res) => {
     const user_id = req.user.id;
     const sql = 'SELECT users.firstname, users.surname, users.city, users.postcode, users.address, users.tel, orders.order_id, orders.order_date, orders.total_amount FROM users JOIN orders ON users.user_id = orders.user_id WHERE users.user_id = ?';
     db.query(sql, [user_id], (err, result) => {
@@ -36,7 +36,7 @@ const orderedItems = (req, res) => {
 const createOrder = (req, res) => {
     const user_id = req.user.id;
     const cart_id = req.params.cart_id;
-    const { city, address, postcode, tel } = req.body;
+    const { city, address, postcode, tel, firstname, surname } = req.body;
     var item_result = [];
     var total_amount = 0;
 
@@ -51,16 +51,13 @@ const createOrder = (req, res) => {
                 FROM cart_items
                 JOIN products ON cart_items.product_id = products.product_id
                 WHERE cart_items.cart_id = ?`;
-    const sqlInsertOrder = 'INSERT INTO orders (order_id, user_id, order_date, city, address, postcode, tel) VALUES (NULL, ?, NOW(), ?, ?, ?, ?)';
-    db.query(sqlInsertOrder, [user_id, city, address, postcode, tel], (err, result) => {
-        //console.log(city, address, postcode, tel);
+    const sqlInsertOrder = 'INSERT INTO orders (order_id, user_id, order_date, city, address, postcode, tel, firstname, surname) VALUES (NULL, ?, NOW(), ?, ?, ?, ?, ?, ?)';
+    db.query(sqlInsertOrder, [user_id, city, address, postcode, tel, firstname, surname], (err, result) => {
         if (err) {
-            //console.log(err)
             return res.status(500).json({ error: 'Hiba az SQL-ben' });
         }
         const order_id = result.insertId;
-        //console.log(result);
-        
+
         db.query(sqlSelectCart_Items, [cart_id], (err, result) => {
             if (err) {
                 return res.status(500).json({ error: 'Hiba az SQL-ben 2' });
