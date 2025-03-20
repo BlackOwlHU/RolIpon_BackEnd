@@ -49,9 +49,9 @@ const editPassword = (req, res) => {
             return res.status(404).json({ error: 'Nincs ilyen felhasználó' });
         }
 
-        const user_id = result[0];
+        const user = result[0];
 
-        bcrypt.compare(oldPassword, user_id.password, (err, isMatch) => {
+        bcrypt.compare(oldPassword, user.password, (err, isMatch) => {
             if (isMatch) {
                 bcrypt.hash(newPassword, 10, (err, hash) => {
                     if (err) {
