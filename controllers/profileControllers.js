@@ -42,7 +42,7 @@ const editPassword = (req, res) => {
     const sql = 'SELECT password FROM users WHERE user_id = ?';
     db.query(sql, [user_id], (err, result) => {
         if (err) {
-            return res.status(500).json({ error: 'Hiba az SQL-ben' });
+            return res.status(500).json({ error: 'Hiba az SQL-ben 1' });
         }
 
         if (result.length === 0) {
@@ -61,7 +61,7 @@ const editPassword = (req, res) => {
                     const sqlUpdate = 'UPDATE users SET password = COALESCE(NULLIF(?, ""), password) WHERE user_id = ?';
                     db.query(sqlUpdate, [hash, user_id], (err, result) => {
                         if (err) {
-                            return res.status(500).json({ error: 'Hiba az SQL-ben' });
+                            return res.status(500).json({ error: 'Hiba az SQL-ben 2' });
                         }
                         return res.status(200).json({ message: 'Jelszó frissítve' });
                     });
