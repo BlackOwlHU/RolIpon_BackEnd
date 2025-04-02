@@ -123,4 +123,41 @@ const deleteProduct = (req, res) => {
     });
 };
 
-module.exports = { products, thisProduct, newProduct, deleteProduct };
+const updateProduct = (req, res) => {
+    const { product_id } = req.params;
+    const { product_name, category_id, brand_id, price, is_in_stock, description } = req.body;
+    const image = req.file ? req.file.filename : null;
+
+    if (!product_id) {
+        return res.status(400).json({ error: 'Product ID is required!' });
+    }
+
+    const sql = `
+        UPDATE products
+        SET 
+            product_name = COALESCE(NULLIF(?, ""), product_name),
+            category_id = COALESCE(NULLIF(?, ""), category_id),
+            brand_id = COALESCE(NULLIF(?, ""), brand_id),
+            price = COALESCE(NULLIF(?, ""), price),
+            is_in_stock = COALESCE(NULLIF(?, ""), is_in_stock),
+            description = COALESCE(NULLIF(?, ""), description),
+            image = COALESCE(NULLIF(?, ""), image)
+        WHERE product_id = ?
+    `;
+
+    const params = [product_name, category_id, brand_id, price, is_in_stock, description, image, product_id];
+
+    db.query(sql, params, (err, result) => {
+        if (err) {
+            return res.status(500).json({ error: 'Adatbázis hiba!' });
+        }
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Nincs ilyen termék!' });
+        }
+
+        return res.status(200).json({ message: 'Termék sikeresen módosítva!' });
+    });
+};
+
+module.exports = { products, thisProduct, newProduct, deleteProduct, updateProduct };
