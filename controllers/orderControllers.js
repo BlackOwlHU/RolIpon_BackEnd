@@ -2,7 +2,7 @@ const db = require('../models/database');
 
 const ordersGet = (req, res) => {
     const user_id = req.user.id;
-    const sql = 'SELECT orders.firstname, orders.surname, orders.city, orders.postcode, orders.address, orders.tel, orders.order_id, orders.order_date, orders.total_amount FROM users JOIN orders ON users.user_id = orders.user_id WHERE users.user_id = ?';
+    const sql = 'SELECT orders.firstname, orders.surname, orders.city, orders.postcode, orders.address, orders.tel, orders.order_id, orders.order_date, orders.total_amount, orders.email FROM users JOIN orders ON users.user_id = orders.user_id WHERE users.user_id = ?';
     db.query(sql, [user_id], (err, result) => {
         if (err) {
             return res.status(500).json({ error: 'Hiba az SQL-ben' });
@@ -140,6 +140,7 @@ const getAllOrders = (req, res) => {
             orders.postcode,
             orders.address,
             orders.tel
+            orders.email
         FROM orders
         JOIN users ON orders.user_id = users.user_id
         ORDER BY orders.order_date DESC
