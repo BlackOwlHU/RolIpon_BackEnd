@@ -139,7 +139,7 @@ const getAllOrders = (req, res) => {
             orders.city,
             orders.postcode,
             orders.address,
-            orders.tel
+            orders.tel,
             orders.email
         FROM orders
         JOIN users ON orders.user_id = users.user_id
