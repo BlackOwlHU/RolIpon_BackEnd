@@ -40,6 +40,6 @@
 └── README.md
 ```
 
-## Telepítés
+## ⬇️ Telepítés
 
-## Használat
+## 🛍️ Használat
