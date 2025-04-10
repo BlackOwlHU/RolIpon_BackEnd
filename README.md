@@ -12,7 +12,7 @@
 
 ## 📁 Projekt szerkezet
 
-```markdown
+```markdown(#szerkezet)
 ├── config/
 │   └── dotenvConfig.js
 ├── controllers/
@@ -39,6 +39,9 @@
 ├── server.js
 └── README.md
 ```
+
+## 🗃️ Adatbázis
+
 
 ## ⬇️ Telepítés
 
