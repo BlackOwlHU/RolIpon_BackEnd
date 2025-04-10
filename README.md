@@ -62,3 +62,18 @@ NPM parancs a szerver futtatásához:
 npm install (Csak egyszer kell, telepítés után!)
 npm run dev (Szerver futtatása.)
 ```
+
+## 📋 Használt függőségek
+Szerveren használt npm modulok:
+```markdown
+- Bcryptjs
+- Cookie-parser
+- Cors
+- Dotenv
+- Express
+- Jsonwebtoken
+- Multer
+- Mysql2
+- Validator
+- Nodemon(Dev)
+```
