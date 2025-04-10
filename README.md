@@ -13,11 +13,30 @@
 ## Projekt szerkezet
 
 ```markdown
-├── src/
-│   ├── components/
-│   ├── pages/
-│   └── App.js
+├── config/
+│   └── dotenvConfig.js
+├── controllers/
+│   ├── authControllers.js
+│   ├── cartControllers.js
+│   ├── filterControllers.js
+│   ├── orderControllers.js
+│   ├── productsControllers.js
+│   └── productsControllers.js
+├── middleware/
+│   ├── adminAuth.js
+│   ├── jwtAuth.js
+│   └── multer.js
+├── routes/
+│   ├── adminRoutes.js
+│   ├── authRoutes.js
+│   ├── cartRoutes.js
+│   ├── filterRoutes.js
+│   ├── orderRoutes.js
+│   ├── productsRoutes.js
+│   └── profileRoutes.js
 ├── package.json
+├── app.js
+├── server.js
 └── README.md
 ```
 
