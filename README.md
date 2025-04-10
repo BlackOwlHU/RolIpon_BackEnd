@@ -49,4 +49,16 @@
 
 ## ⬇️ Telepítés
 
+NPM parancsok telepítéshes:
+
+```markdown
+npm clone https://github.com/BlackOwlHU/RolIpon_BackEnd.git (GitHub-ról letöltés)
+```
+
 ## 🛍️ Használat
+
+NPM parancs a szerver futtatásához:
+```markdown
+npm install (Csak egyszer kell, telepítés után!)
+npm run dev (Szerver futtatása.)
+```
