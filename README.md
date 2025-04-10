@@ -1,17 +1,12 @@
 # 📒 RolIpon Backend Dokumentáció
 
 ## 🗒️ Tartalomjegyzék
-- [Bevezetés](#Bevezetés)
-
-- [Szerkezet](#Projekt_szerkezet)
-
-- [Adatbázis](#Adatbázis)
-
-- [Telepítés](#Telepítés)
-
-- [Használat](#Használat)
-
-- [Dokumentáció](#Dokumentacio)
+- [Bevezetés](#bevezetés)
+- [Projekt szerkezet](#projekt-szerkezet)
+- [Adatbázis](#adatbazis)
+- [Telepítés](#telepites)
+- [Használat](#hasznalat)
+- [Használt függőségek](#használt-függőségek)
 
 ## 🏪 Bevezetés
 
