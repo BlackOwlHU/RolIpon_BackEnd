@@ -1,6 +1,6 @@
 # 📒 RolIpon Backend Dokumentáció
 
-## Tartalomjegyzék
+## 🗒️ Tartalomjegyzék
 ```markdown
 - [Bevezetés](#bevezetés)
 - [Szerkezet](#szerkezet)
@@ -8,9 +8,9 @@
 - [Használat](#használat)
 - [Dokumentáció](#dokumentáció)
 ```
-## Bevezetés
+## 🏪 Bevezetés
 
-## Projekt szerkezet
+## 📁 Projekt szerkezet
 
 ```markdown
 ├── config/
