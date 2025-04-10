@@ -45,7 +45,7 @@
 
 ```markdown
 | 💄️ DrawSQL | Adatbázis diagram | [Megtekintés](https://drawsql.app/teams/blackowlhu/diagrams/rolipon) |
-| 🧪 Postman | API tesztek | [Megtekintés](https://gold-equinox-349152.postman.co/workspace/RolIpon~16d80b71-9fbc-4792-b4ea-144853d3a13b/collection/39908184-e15c1e2d-c0ea-4bd9-8926-adb44815972e?action=share&creator=39908184)) |
+| 🧪 Postman | API tesztek | [Megtekintés](https://gold-equinox-349152.postman.co/workspace/RolIpon~16d80b71-9fbc-4792-b4ea-144853d3a13b/collection/39908184-e15c1e2d-c0ea-4bd9-8926-adb44815972e?action=share&creator=39908184) |
 ```
 
 ## ⬇️ Telepítés
