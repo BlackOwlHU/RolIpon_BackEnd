@@ -10,6 +10,12 @@
 
 ## 🏪 Bevezetés
 
+Ez a backend csatlakozik a [Frontendhez](https://github.com/BlackOwlHU/RolIpon_FrontEnd). 
+Ami egy webshop, melyen elektronikai termékeket lehet rendelni. De ez szabadon változtatható.
+
+Szerkezet szempontjából átláthatóan fel van tagolva, gyorsan meg lehet találni a keresett végpontokat.
+Könnyen tovább fejleszthető adatbázis és végpontok.
+
 ## 📁 Projekt szerkezet
 
 ```markdown
