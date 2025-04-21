@@ -7,6 +7,7 @@
 - [Telepítés](#telepites)
 - [Használat](#hasznalat)
 - [Használt függőségek](#használt-függőségek)
+- [Fejlesztési lehetőségek](#fejlesztési-lehetőségek)
 
 ## 🏪 Bevezetés
 
