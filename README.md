@@ -83,3 +83,10 @@ Szerveren használt npm modulok:
 - Validator
 - Nodemon(Dev)
 ```
+## 📇 Fejlesztési lehetőségek
+
+```markdown
+- Végpont felhasználó adatainak kezelésére (admin).
+- Rendelés módosítására (admin).
+- Adminauth.js (middleware) kijavítása és használata az admin-hoz tartazó végpontokhoz.
+```
