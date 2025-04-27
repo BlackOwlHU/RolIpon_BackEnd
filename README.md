@@ -59,7 +59,7 @@ Könnyen tovább fejleszthető adatbázis és végpontok.
 NPM parancsok telepítéshes:
 
 ```markdown
-npm clone https://github.com/BlackOwlHU/RolIpon_BackEnd.git (GitHub-ról letöltés)
+git clone https://github.com/BlackOwlHU/RolIpon_BackEnd.git (GitHub-ról letöltés)
 ```
 
 ## 🛍️ Használat
